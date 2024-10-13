@@ -166,3 +166,4 @@ cython_debug/
 # hueta
 
 *hueta.txt
+*data/time_insight.db
