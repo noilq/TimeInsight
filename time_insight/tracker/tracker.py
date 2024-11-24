@@ -4,12 +4,13 @@ import ctypes
 import ctypes.wintypes
 import threading
 import time
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
+import atexit
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import or_, and_, desc, exists
 from datetime import datetime, timezone
 from time_insight.data.database import engine
-from time_insight.data.models import Application, ApplicationActivity
-
+from time_insight.data.models import Application, ApplicationActivity, UserSession, UserSessionType
+    
 sys.stdout.reconfigure(encoding='utf-8')
 
 user32 = ctypes.windll.user32
@@ -122,13 +123,82 @@ def record_active_window(engine, event_type="Active"):
         time.sleep(1)
 
 
-def start_tracker_thread():
-    tracker_thread = threading.Thread(target=init_tracker, daemon=True)
-    tracker_thread.start()
-    return tracker_thread
 
 def init_tracker():
-    record_active_window(engine)
+    #threading.Thread(target=log_power_events, daemon=True, name="PowerEventsLogger").start()
+    #threading.Thread(target=correct_application_activity, args=(engine,), daemon=True, name="ActivityCorrector").start()
+    
+    on_start()
+    atexit.register(on_end)
+
+    threading.Thread(target=record_active_window, args=(engine,), daemon=True, name="ActiveWindowRecorder").start()
 
 if __name__ == '__main__':
     init_tracker()
+
+
+
+
+def on_start():
+    with Session(engine) as session:
+        try:
+            # Текущее время для новой сессии
+            current_time = datetime.now(timezone.utc)
+
+            # Создаем новую запись для UserSession с user_session_type_id = 1
+            new_session = UserSession(
+                user_session_type_id=1,  # ID типа сессии для "on_start"
+                session_start=current_time
+            )
+
+            # Получаем последнюю запись
+            last_session = session.query(UserSession).order_by(UserSession.id.desc()).first()
+            if last_session and last_session.session_end is None:
+                # Устанавливаем session_end и duration для предыдущей записи
+                last_session.session_end = current_time
+                last_session.duration = int((make_timezone_aware(last_session.session_end) -
+                                             make_timezone_aware(last_session.session_start)).total_seconds())
+
+            # Добавляем новую сессию
+            session.add(new_session)
+            session.commit()
+        except Exception as e:
+            print(f"Error in on_start: {e}")
+            session.rollback()
+
+def on_end():
+    with Session(engine) as session:
+        try:
+            # Текущее время
+            current_time = datetime.now(timezone.utc)
+
+            # Обновляем последнюю запись в таблице ApplicationActivity
+            last_activity = session.query(ApplicationActivity).order_by(ApplicationActivity.id.desc()).first()
+            if last_activity and last_activity.session_end is None:
+                # Устанавливаем session_end и duration
+                last_activity.session_end = current_time
+                last_activity.duration = int((make_timezone_aware(last_activity.session_end) -
+                                              make_timezone_aware(last_activity.session_start)).total_seconds())
+
+            # Создаем новую запись для UserSession с user_session_type_id = 2
+            new_session = UserSession(
+                user_session_type_id=2,  # ID типа сессии для "on_end"
+                session_start=current_time
+            )
+
+            # Получаем последнюю запись в UserSession
+            last_session = session.query(UserSession).order_by(UserSession.id.desc()).first()
+            if last_session and last_session.session_end is None:
+                # Устанавливаем session_end и duration
+                last_session.session_end = current_time
+                last_session.duration = int((make_timezone_aware(last_session.session_end) -
+                                             make_timezone_aware(last_session.session_start)).total_seconds())
+
+            # Добавляем новую сессию
+            session.add(new_session)
+
+            # Сохраняем изменения
+            session.commit()
+        except Exception as e:
+            print(f"Error in on_end: {e}")
+            session.rollback()

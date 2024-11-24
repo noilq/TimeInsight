@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime , ForeignKey # type: ignore
-from sqlalchemy.orm import relationship # type: ignore
-from sqlalchemy.ext.declarative import declarative_base # type: ignore
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, timezone
 
 Base = declarative_base()
@@ -12,7 +12,7 @@ class Application(Base):
     name = Column(Text, nullable=False)
     desc = Column(Text)
     path = Column(Text)
-    enrollment_date = Column(DateTime, default=datetime.now(timezone.utc))
+    enrollment_date = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
 
     activities = relationship('ApplicationActivity', back_populates='application')
 
@@ -23,35 +23,27 @@ class ApplicationActivity(Base):
     application_id = Column(Integer, ForeignKey('application.id'), index=True)
     window_name = Column(Text, nullable=False)
     additional_info = Column(Text)
-    session_start = Column(DateTime, default=datetime.now(timezone.utc))
-    session_end = Column(DateTime)
+    session_start = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
+    session_end = Column(DateTime(timezone=True))
     duration = Column(Integer)
 
     application = relationship('Application', back_populates='activities')
-
-class SystemActivity(Base):
-    __tablename__ = 'system_activity'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    system_activity_type_id = Column(Integer, ForeignKey('system_activity_type.id'), index=True)
-    start_time = Column(DateTime, default=datetime.now(timezone.utc))
-    end_time = Column(DateTime)
-    duration = Column(Integer)
-
-    activity_type = relationship('SystemActivityType', back_populates='activities')
-
-class SystemActivityType(Base):
-    __tablename__ = 'system_activity_type'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(Text, nullable=False)
-
-    activities = relationship('SystemActivity', back_populates='activity_type')
 
 class UserSession(Base):
     __tablename__ = 'user_session'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    session_start = Column(DateTime, default=datetime.now(timezone.utc))
-    session_end = Column(DateTime)
+    user_session_type_id = Column(Integer, ForeignKey('user_session_type.id'))
+    session_start = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
+    session_end = Column(DateTime(timezone=True))
     duration = Column(Integer)
+
+    user_session_type = relationship('UserSessionType', back_populates='user_sessions')
+
+class UserSessionType(Base):
+    __tablename__ = 'user_session_type'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(Text, nullable=False)
+
+    user_sessions = relationship('UserSession', back_populates='user_session_type')
