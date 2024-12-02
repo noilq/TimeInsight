@@ -1,5 +1,5 @@
 import win32con #type: ignore
-import ctypes
+import ctypes 
 import ctypes.wintypes
 import threading
 import time
@@ -11,58 +11,70 @@ from time_insight.data.database import engine
 from time_insight.data.models import Application, ApplicationActivity, UserSession, UserSessionType
 from time_insight.log import log_to_console
 
+#init system libs
 user32 = ctypes.windll.user32
 kernel32 = ctypes.windll.kernel32
 
-def get_active_window_info():
-    hwnd = user32.GetForegroundWindow()
-    if not hwnd:
-        return None, None, None
-    
-    length = user32.GetWindowTextLengthW(hwnd)
-    title = ctypes.create_unicode_buffer(length + 1)
-    user32.GetWindowTextW(hwnd, title, length + 1)
-    
-    processID = ctypes.wintypes.DWORD()
-    user32.GetWindowThreadProcessId(hwnd, ctypes.byref(processID))
-    
-    process_path = get_process_filename(processID.value) if processID.value else "Unknown"
-    process_name = process_path.split("\\")[-1] if process_path != "Unknown" else "Unknown"
 
-    return title.value, process_name, process_path
+def get_active_window_info():
+    try:
+        hwnd = user32.GetForegroundWindow()     #get active window
+        if not hwnd:                           
+            return None, None, None
+
+        length = user32.GetWindowTextLengthW(hwnd)          #get lenght of the title
+        title = ctypes.create_unicode_buffer(length + 1)    #create buffer for window title 
+        user32.GetWindowTextW(hwnd, title, length + 1)      #extract title text
+
+        processID = ctypes.wintypes.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(processID))      #get id of the window process
+
+        #get process path
+        process_path = get_process_filename(processID.value) if processID.value else "Unknown"
+        process_name = process_path.split("\\")[-1] if process_path != "Unknown" else "Unknown"
+
+        return title.value, process_name, process_path
+    except Exception as e:
+        log_to_console(f"Error in get_active_window_info: {e}")
+        return None, None, None
 
 def get_process_filename(processID):
-    process_flag = win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ
-    h_process = kernel32.OpenProcess(process_flag, 0, processID)
+    process_flag = win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ    #flags to access the process
+    h_process = kernel32.OpenProcess(process_flag, 0, processID)                    #opens the process
 
     if not h_process:
+        log_to_console(f"Failed to open process with ID {processID}")
         return None
 
     try:
-        filename_buffer_size = ctypes.wintypes.DWORD(4096)
-        filename = ctypes.create_unicode_buffer(filename_buffer_size.value)
-        kernel32.QueryFullProcessImageNameW(h_process, 0, ctypes.byref(filename), ctypes.byref(filename_buffer_size))
+        filename_buffer_size = ctypes.wintypes.DWORD(4096)                      #set buffer size
+        filename = ctypes.create_unicode_buffer(filename_buffer_size.value)     #create buffer 
+        kernel32.QueryFullProcessImageNameW(h_process, 0, ctypes.byref(filename), ctypes.byref(filename_buffer_size))      #get process path
         return filename.value
     finally:
-        kernel32.CloseHandle(h_process)
+        kernel32.CloseHandle(h_process)     #always close process handle
 
 def make_timezone_aware(dt):
-    """Ensure that a datetime object is timezone-aware in UTC."""
-    if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
-    return dt
+    try:
+        if dt.tzinfo is None:                           #if there is no info about timezone
+            return dt.replace(tzinfo=timezone.utc)      #set to utc
+        return dt
+    except Exception as e:
+        log_to_console(f"Error in make_timezone_aware: {e}")
+        return dt
 
 def record_active_window(engine, event_type="Active"):
-    with Session(engine) as session:
-        while True:
-            title, process_name, process_path = get_active_window_info()
-            if title and process_name and process_path:
-                
-                    current_time = datetime.now(timezone.utc)
-
-                    application = session.query(Application).filter_by(name=process_name).first()
+    with Session(engine) as session:    #open session to work with db
+        try:
+            while True:                 
+                title, process_name, process_path = get_active_window_info()    #get active window info
+                if title and process_name and process_path:     #check for the data
+                    current_time = datetime.now(timezone.utc)   #curr time in utc
                     
+                    #check if there is an app record in db
+                    application = session.query(Application).filter_by(name=process_name).first()
                     if not application:
+                        #create new app record
                         application = Application(
                             name=process_name,
                             desc="",
@@ -72,19 +84,18 @@ def record_active_window(engine, event_type="Active"):
                         session.add(application)
                         session.commit()
 
+                    #check last activity
+                    #if last activity hasnt ended yet and has the same title -> skip
                     last_activity = session.query(ApplicationActivity).order_by(desc(ApplicationActivity.session_start)).first()
-
-                    if last_activity:
-                        last_activity.session_start = make_timezone_aware(last_activity.session_start)
-
                     if last_activity and last_activity.window_name == title and last_activity.session_end is None:
+                        time.sleep(1)
                         continue
-
+                    
+                    #close previous activity if hasnt yet been completed
                     if last_activity and last_activity.session_end is None:
-                        last_activity.session_end = current_time
-                        last_activity.duration = round((last_activity.session_end - last_activity.session_start).total_seconds(), 3)
-                        session.commit()
+                        update_last_activity(session, current_time)
 
+                    #create new activity
                     new_activity = ApplicationActivity(
                         application_id=application.id,
                         window_name=title,
@@ -94,68 +105,62 @@ def record_active_window(engine, event_type="Active"):
                     session.add(new_activity)
                     session.commit()
 
-            time.sleep(1)
-
-
+                time.sleep(1)
+        except Exception as e:
+            log_to_console(f"Error in record_active_window: {e}")
+            session.rollback()
 
 def init_tracker(): 
-    on_start()
-    atexit.register(on_end)
-
+    on_start()                  #action on start
+    atexit.register(on_end)     #register action on end
+    
+    #start a thread for main tracker
     threading.Thread(target=record_active_window, args=(engine,), daemon=True, name="ActiveWindowRecorder").start()
-
 
 if __name__ == '__main__':
     init_tracker()
 
+def update_last_session(session, end_time):
+    last_session = session.query(UserSession).order_by(UserSession.id.desc()).first()   #get last session
+    if last_session and last_session.session_end is None:   #end last session if still active
+        last_session.session_end = end_time     
+        last_session.duration = round((make_timezone_aware(last_session.session_end) -
+                                       make_timezone_aware(last_session.session_start)).total_seconds(), 3)
+        session.commit()    #save changes
+
+def update_last_activity(session, end_time):
+    last_activity = session.query(ApplicationActivity).order_by(ApplicationActivity.id.desc()).first()  #get last activity
+    if last_activity and last_activity.session_end is None: #end last activity if still active
+        last_activity.session_end = end_time
+        last_activity.duration = round((make_timezone_aware(last_activity.session_end) -
+                                        make_timezone_aware(last_activity.session_start)).total_seconds(), 3)
+        session.commit()    #save changes
+
+def add_user_session(session, session_type_id, start_time):
+    new_session = UserSession(
+        user_session_type_id=session_type_id,   #session type, 1 for Active, 2 for Sleep
+        session_start=start_time
+    )
+    session.add(new_session)
+    session.commit()
 
 def on_start():
     with Session(engine) as session:
         try:
-            current_time = datetime.now(timezone.utc)
-
-            new_session = UserSession(
-                user_session_type_id=1,
-                session_start=current_time
-            )
-
-            last_session = session.query(UserSession).order_by(UserSession.id.desc()).first()
-            if last_session and last_session.session_end is None:
-                last_session.session_end = current_time
-                last_session.duration = round((make_timezone_aware(last_session.session_end) -
-                                             make_timezone_aware(last_session.session_start)).total_seconds(), 3)
-
-            session.add(new_session)
-            session.commit()
+            current_time = datetime.now(timezone.utc)   #curr time
+            update_last_session(session, current_time)  #end last session
+            add_user_session(session, session_type_id=1, start_time=current_time)   #add new active session
         except Exception as e:
-            print(f"Error in on_start: {e}")
+            log_to_console(f"Error in on_start: {e}")
             session.rollback()
 
 def on_end():
     with Session(engine) as session:
         try:
-            current_time = datetime.now(timezone.utc)
-
-            last_activity = session.query(ApplicationActivity).order_by(ApplicationActivity.id.desc()).first()
-            if last_activity and last_activity.session_end is None:
-                last_activity.session_end = current_time
-                last_activity.duration = round((make_timezone_aware(last_activity.session_end) -
-                                              make_timezone_aware(last_activity.session_start)).total_seconds(), 3)
-
-            new_session = UserSession(
-                user_session_type_id=2,
-                session_start=current_time
-            )
-
-            last_session = session.query(UserSession).order_by(UserSession.id.desc()).first()
-            if last_session and last_session.session_end is None:
-                last_session.session_end = current_time
-                last_session.duration = round((make_timezone_aware(last_session.session_end) -
-                                             make_timezone_aware(last_session.session_start)).total_seconds(), 3)
-
-            session.add(new_session)
-
-            session.commit()
+            current_time = datetime.now(timezone.utc)   #curr time
+            update_last_activity(session, current_time) #end last activity
+            update_last_session(session, current_time)  #end last session
+            add_user_session(session, session_type_id=2, start_time=current_time)   #add new sleep session
         except Exception as e:
-            print(f"Error in on_end: {e}")
+            log_to_console(f"Error in on_end: {e}")
             session.rollback()
