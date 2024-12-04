@@ -17,6 +17,12 @@ kernel32 = ctypes.windll.kernel32
 
 
 def get_active_window_info():
+    """
+    Retrieves the information about the currently active window.
+
+    :return: A tuple containing the window title, process name, and process path.
+             Returns (None, None, None) if the active window information cannot be retrieved.
+    """
     try:
         hwnd = user32.GetForegroundWindow()     #get active window
         if not hwnd:                           
@@ -39,6 +45,12 @@ def get_active_window_info():
         return None, None, None
 
 def get_process_filename(processID):
+    """
+    Retrieves full file path of a process by given PID.
+
+    :param processID: The ID of the process.
+    :return: The full path to the process executable file, or None if the process cannot be accessed.
+    """
     process_flag = win32con.PROCESS_QUERY_INFORMATION | win32con.PROCESS_VM_READ    #flags to access the process
     h_process = kernel32.OpenProcess(process_flag, 0, processID)                    #opens the process
 
@@ -55,6 +67,12 @@ def get_process_filename(processID):
         kernel32.CloseHandle(h_process)     #always close process handle
 
 def make_timezone_aware(dt):
+    """
+    Makes a datetime object timezone-aware, setting it to UTC if it's naive.
+
+    :param dt: The datetime object to make timezone-aware.
+    :return: A timezone-aware datetime object (in UTC).
+    """
     try:
         if dt.tzinfo is None:                           #if there is no info about timezone
             return dt.replace(tzinfo=timezone.utc)      #set to utc
@@ -64,6 +82,14 @@ def make_timezone_aware(dt):
         return dt
 
 def record_active_window(engine, event_type="Active"):
+    """
+    Continuously tracks the active window and logs its information to the database.
+
+    Runs in an infinite loop, periodically checking for the active window.
+
+    :param engine: The SQLAlchemy engine used to interact with the database.
+    :param event_type: The type of event being logged (default is "Active").
+    """
     with Session(engine) as session:    #open session to work with db
         try:
             while True:                 
@@ -110,7 +136,14 @@ def record_active_window(engine, event_type="Active"):
             log_to_console(f"Error in record_active_window: {e}")
             session.rollback()
 
-def init_tracker(): 
+def init_tracker():
+    """
+    Initializes activity tracker 
+
+    Starts a background thread that continuously tracks the active window 
+
+    :return: None
+    """
     on_start()                  #action on start
     atexit.register(on_end)     #register action on end
     
@@ -121,6 +154,12 @@ if __name__ == '__main__':
     init_tracker()
 
 def update_last_session(session, end_time):
+    """
+    Ends last active session if its still ongoing and updates its duration.
+    
+    :param session: SQLAlchemy session object used for database interactions.
+    :param end_time: The timestamp indicating the end of the session (timezone-aware).
+    """
     last_session = session.query(UserSession).order_by(UserSession.id.desc()).first()   #get last session
     if last_session and last_session.session_end is None:   #end last session if still active
         last_session.session_end = end_time     
@@ -129,6 +168,12 @@ def update_last_session(session, end_time):
         session.commit()    #save changes
 
 def update_last_activity(session, end_time):
+    """
+    Ends last active activity if its still ongoing and updates its duration.
+    
+    :param session: SQLAlchemy session object used for database interactions.
+    :param end_time: The timestamp indicating the end of the activity (timezone-aware).
+    """
     last_activity = session.query(ApplicationActivity).order_by(ApplicationActivity.id.desc()).first()  #get last activity
     if last_activity and last_activity.session_end is None: #end last activity if still active
         last_activity.session_end = end_time
@@ -137,6 +182,13 @@ def update_last_activity(session, end_time):
         session.commit()    #save changes
 
 def add_user_session(session, session_type_id, start_time):
+    """
+    Adds a new user session to the database.
+    
+    :param session: SQLAlchemy session object used for database interactions.
+    :param session_type_id: Integer representing the type of session (1 for Active, 2 for Sleep).
+    :param start_time: The timestamp indicating when the session started (timezone-aware).
+    """
     new_session = UserSession(
         user_session_type_id=session_type_id,   #session type, 1 for Active, 2 for Sleep
         session_start=start_time
@@ -145,6 +197,10 @@ def add_user_session(session, session_type_id, start_time):
     session.commit()
 
 def on_start():
+    """
+    This function is called when the program starts. It updates the last session, 
+    ends the last active session if it is still ongoing, and adds a new session of 'Active' type.
+    """
     with Session(engine) as session:
         try:
             current_time = datetime.now(timezone.utc)   #curr time
@@ -155,6 +211,10 @@ def on_start():
             session.rollback()
 
 def on_end():
+    """
+    This function is called when the program ends. It updates the last activity and session to mark them as ended, 
+    calculates their durations, and adds a new session of 'Sleep' type.
+    """
     with Session(engine) as session:
         try:
             current_time = datetime.now(timezone.utc)   #curr time
