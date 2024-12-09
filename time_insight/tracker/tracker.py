@@ -26,7 +26,7 @@ def get_active_window_info():
     try:
         hwnd = user32.GetForegroundWindow()     #get active window
         if not hwnd:                           
-            return None, None, None
+            return None, None, None, None
 
         length = user32.GetWindowTextLengthW(hwnd)          #get lenght of the title
         title = ctypes.create_unicode_buffer(length + 1)    #create buffer for window title 
@@ -36,13 +36,14 @@ def get_active_window_info():
         user32.GetWindowThreadProcessId(hwnd, ctypes.byref(processID))      #get id of the window process
 
         #get process path
+        processID_value = processID.value
         process_path = get_process_filename(processID.value) if processID.value else "Unknown"
         process_name = process_path.split("\\")[-1] if process_path != "Unknown" else "Unknown"
 
-        return title.value, process_name, process_path
+        return title.value, process_name, process_path, processID_value
     except Exception as e:
         log_to_console(f"Error in get_active_window_info: {e}")
-        return None, None, None
+        return None, None, None, None
 
 def get_process_filename(processID):
     """
@@ -93,7 +94,7 @@ def record_active_window(engine, event_type="Active"):
     with Session(engine) as session:    #open session to work with db
         try:
             while True:                 
-                title, process_name, process_path = get_active_window_info()    #get active window info
+                title, process_name, process_path, processID = get_active_window_info()  #get active window info
                 if title and process_name and process_path:     #check for the data
                     current_time = datetime.now(timezone.utc)   #curr time in utc
                     
@@ -125,7 +126,7 @@ def record_active_window(engine, event_type="Active"):
                     new_activity = ApplicationActivity(
                         application_id=application.id,
                         window_name=title,
-                        additional_info=event_type,
+                        additional_info=f"{event_type}, PID: {processID}", 
                         session_start=current_time
                     )
                     session.add(new_activity)
