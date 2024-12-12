@@ -1,6 +1,22 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QDesktopWidget, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QSplitter
+import os
+from datetime import datetime, date
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+            QApplication, 
+            QWidget,   
+            QDesktopWidget, 
+            QMainWindow, 
+            QVBoxLayout, 
+            QHBoxLayout, 
+            QLabel, 
+            QScrollArea, 
+            QSplitter, 
+            QSystemTrayIcon,
+            QMenu,
+            QAction
+)
+from PyQt5.QtGui import QIcon
 from sqlalchemy.orm import Session
 from time_insight.data.database import engine
 from time_insight.data.models import Application, ApplicationActivity
@@ -86,12 +102,18 @@ class ActivitiesWidget(QWidget):
         main_layout.addWidget(scroll_area)
         self.setLayout(main_layout)
 
-        self.load_application_activities()
+        self.load_application_activities(date(2024, 12, 11))
         
-    def load_application_activities(self):
+    def load_application_activities(self, target_date):
         try:
+            start_of_day = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
+            end_of_day = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
+
             with Session(engine) as session:
-                activities = session.query(ApplicationActivity).all()
+                activities = session.query(ApplicationActivity).filter(
+                    ApplicationActivity.session_start >= start_of_day,
+                    ApplicationActivity.session_end <= end_of_day
+                ).all()
                 
                 if activities:
                     for activity in activities:
@@ -119,6 +141,31 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("TimeInsight")
         self.setGeometry(*self.GetWindowGeometry())
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
+
+        icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+        self.setWindowIcon(QIcon(icon_path))
+
+
+        #трей
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon(icon_path))
+
+        self.tray_menu = QMenu()
+
+        open_action = self.tray_menu.addAction("Open")
+        open_action.triggered.connect(self.show)
+
+        quit_action = self.tray_menu.addAction("Exit")
+        quit_action.triggered.connect(self.close_app)
+
+        self.tray_icon.setContextMenu(self.tray_menu)
+
+        #show tray icon
+        self.tray_icon.show()
+
+        #obrabotchick clikov na icone v traye
+        self.tray_icon.activated.connect(self.on_tray_icon_click)
+
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -156,6 +203,25 @@ class MainWindow(QMainWindow):
         main_layout.setStretch(2, 5)  #нижний разделитель
 
         central_widget.setLayout(main_layout)
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
+        """
+        self.tray_icon.showMessage(
+            "",
+            "",
+            QSystemTrayIcon.Information,
+            2000
+        )"""
+
+    def on_tray_icon_click(self, reason):
+        if reason == QSystemTrayIcon.DoubleClick:
+            self.show()
+
+    def close_app(self):
+        self.tray_icon.hide()
+        QApplication.quit()
 
     def showEvent(self, event):
         #ubrat posle pokaza okna show on hueta
