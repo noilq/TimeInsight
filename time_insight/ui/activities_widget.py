@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import (
             QWidget, QVBoxLayout, QLabel, QScrollArea, QLabel
@@ -26,7 +26,7 @@ class ActivitiesWidget(QWidget):
         main_layout.addWidget(scroll_area)
         self.setLayout(main_layout)
 
-        self.load_application_activities(date(2024, 12, 11))
+        self.load_application_activities(QDate.currentDate())
 
     def load_application_activities(self, target_date):
         try:
