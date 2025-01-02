@@ -79,7 +79,6 @@ class HeaderWidget(QWidget):
             self.calendar.show()
 
     def date_changed(self):
-        """Обработчик изменения даты через календарь."""
         self.selected_date = self.calendar.selectedDate()
         self.update_date_label()
         self.calendar.hide()

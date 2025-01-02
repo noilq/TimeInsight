@@ -1,9 +1,9 @@
 import sys
 import os
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal, QDateTime
 from PyQt5.QtWidgets import (
             QApplication, QWidget, QDesktopWidget, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel,
-            QSplitter, QSystemTrayIcon, QMenu, QLabel, QStackedWidget
+            QSplitter, QSystemTrayIcon, QMenu, QLabel, QStackedWidget, QPushButton
 )
 from PyQt5.QtGui import QIcon
 from time_insight.log import log_to_console
@@ -12,6 +12,10 @@ from time_insight.ui.activities_widget import ActivitiesWidget
 from time_insight.ui.applications_widget import ApplicationsWidget
 from time_insight.ui.chronological_widget import ChronologicalGraphWidget
 from time_insight.ui.header_widget import HeaderWidget
+from time_insight.ui.navigation_widget import NavigationWidget
+
+from time_insight.ui.main_screen import MainScreen
+from time_insight.ui.Stats.stats_screen import StatsScreen
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -27,8 +31,6 @@ class MainWindow(QMainWindow):
         self.init_tray()
         self.init_ui()
         self.connect_signals()
-
-
 
     def init_tray(self):
         self.tray_icon = QSystemTrayIcon(self)
@@ -50,64 +52,41 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout()
 
-        header_widget = self.create_header()
-        main_layout.addWidget(header_widget)
+        self.navigation_widget = NavigationWidget()
+        main_layout.addWidget(self.navigation_widget)
 
-        self.timeline_widget = ChronologicalGraphWidget()
-        main_layout.addWidget(self.timeline_widget)
+        # Stacked widget for screens
+        self.stacked_widget = QStackedWidget()
 
-        splitter = self.create_splitter()
-        main_layout.addWidget(splitter)
+        # Main Screen
+        self.main_screen = MainScreen()
 
-        main_layout.setStretch(0, 1)
-        main_layout.setStretch(1, 5)
-        main_layout.setStretch(2, 5)
+        # Stats Screen
+        self.stats_screen = StatsScreen()
+
+        # Options Screen
+        self.options_screen = QWidget()
+        self.options_screen.setStyleSheet("background-color: white;")
+
+        # Add screens to stacked widget
+        self.stacked_widget.addWidget(self.main_screen)
+        self.stacked_widget.addWidget(self.stats_screen)
+        self.stacked_widget.addWidget(self.options_screen)
+
+        main_layout.addWidget(self.stacked_widget)
 
         central_widget.setLayout(main_layout)
 
-    def create_header(self):
-        header_widget = QWidget()
-        header_layout = QHBoxLayout(header_widget)
-
-        self.header_left = HeaderWidget()
-        self.header_center = QLabel("Header cent")
-        self.header_right = QLabel("Header right")
-
-        self.header_left.setStyleSheet("border: 2px solid black; background-color: lightgray;")
-        self.header_center.setStyleSheet("border: 2px solid black; background-color: lightgray;")
-        self.header_right.setStyleSheet("border: 2px solid black; background-color: lightgray;")
-
-        header_layout.addWidget(self.header_left, 1)
-        header_layout.addWidget(self.header_center, 2)
-        header_layout.addWidget(self.header_right, 1)
-
-        return header_widget
-    
-    def create_splitter(self):
-        splitter = QSplitter(Qt.Horizontal)
-
-        self.applications_widget = ApplicationsWidget()
-        self.applications_widget.setMinimumSize(300, 100)
-
-        self.activities_widget = ActivitiesWidget()
-        self.activities_widget.setMinimumSize(300, 100)
-
-        splitter.addWidget(self.applications_widget)
-        splitter.addWidget(self.activities_widget)
-
-        splitter.setCollapsible(0, False)
-        splitter.setCollapsible(1, False)
-        splitter.setSizes([300, 500])
-
-        return splitter
+    def on_navigation(self, screen_name):
+        if screen_name == "main":
+            self.stacked_widget.setCurrentIndex(0)
+        elif screen_name == "stats":
+            self.stacked_widget.setCurrentIndex(1)
+        elif screen_name == "options":
+            self.stacked_widget.setCurrentIndex(2)
 
     def connect_signals(self):
-        self.header_left.date_changed_signal.connect(self.on_date_changed)
-
-
-
-    def on_date_changed(self, selected_date):
-        self.activities_widget.update_activities(selected_date)
+        self.navigation_widget.navigation_signal.connect(self.on_navigation)
 
     def closeEvent(self, event):
         event.ignore()
