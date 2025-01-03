@@ -1,7 +1,7 @@
 from datetime import datetime
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import (
-            QWidget, QVBoxLayout, QLabel, QScrollArea, QLabel
+            QWidget, QVBoxLayout, QLabel, QScrollArea, QTableWidget, QTableWidgetItem, QHeaderView
 )
 from sqlalchemy.orm import Session
 from time_insight.data.database import engine
@@ -11,7 +11,7 @@ from time_insight.log import log_to_console
 class ActivitiesWidget(QWidget):
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("border: 2px solid black; background-color: white;")
+        self.setStyleSheet("background-color: none;")
         
         self.layout = QVBoxLayout()
 
@@ -33,16 +33,7 @@ class ActivitiesWidget(QWidget):
             activities = self.get_activities_from_database(target_date)
             
             if activities:
-                for activity in activities:
-                    activity_info = f"Activity id: {activity.id}, " \
-                                    f"Application id: {activity.application_id}, " \
-                                    f"Window name: {activity.window_name}, " \
-                                    f"Add info: {activity.additional_info}, " \
-                                    f"Start time: {activity.session_start}, " \
-                                    f"End Time: {activity.session_end}, " \
-                                    f"Duration: {activity.duration}"
-                    label = QLabel(activity_info, self)
-                    self.layout.addWidget(label)
+                self.draw_table(activities)
             else:
                 no_data_label = QLabel("No application activities found.", self)
                 self.layout.addWidget(no_data_label)
@@ -50,6 +41,36 @@ class ActivitiesWidget(QWidget):
         except RuntimeError as e:
             error_label = QLabel(f"Error loading data: {str(e)}", self)
             self.layout.addWidget(error_label)
+
+    def draw_table(self, activities):
+        """Draw table with activities data."""
+        #create table
+        table = QTableWidget()
+        table.setRowCount(len(activities))
+        table.setColumnCount(7)
+        table.setHorizontalHeaderLabels([
+            "Activity ID", "Application ID", "Window Name", "Additional Info",
+            "Start Time", "End Time", "Duration"
+        ])
+
+        #hide counter column
+        table.verticalHeader().setVisible(False)
+
+        #fill table with data
+        for row_idx, activity in enumerate(activities):
+            table.setItem(row_idx, 0, QTableWidgetItem(str(activity.id)))
+            table.setItem(row_idx, 1, QTableWidgetItem(str(activity.application_id)))
+            table.setItem(row_idx, 2, QTableWidgetItem(activity.window_name))
+            table.setItem(row_idx, 3, QTableWidgetItem(activity.additional_info))
+            table.setItem(row_idx, 4, QTableWidgetItem(str(activity.session_start)))
+            table.setItem(row_idx, 5, QTableWidgetItem(str(activity.session_end)))
+            table.setItem(row_idx, 6, QTableWidgetItem(str(activity.duration)))
+
+        #auto resize columns
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        #add table to layout
+        self.layout.addWidget(table)
 
     def get_activities_from_database(self, target_date):
         if isinstance(target_date, QDate):
