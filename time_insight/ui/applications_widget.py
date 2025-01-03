@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import (
-            QWidget, QVBoxLayout, QLabel, QScrollArea,  QLabel
+            QWidget, QVBoxLayout, QLabel, QScrollArea,  QLabel, QTableWidget, QTableWidgetItem, QHeaderView
 )
 from sqlalchemy.orm import Session
 from time_insight.data.database import engine
@@ -11,7 +11,7 @@ from time_insight.log import log_to_console
 class ApplicationsWidget(QWidget):
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("border: 2px solid black; background-color: white;")
+        self.setStyleSheet("background-color: none;")
         
         self.layout = QVBoxLayout()
 
@@ -46,17 +46,27 @@ class ApplicationsWidget(QWidget):
 
                     sorted_app_time = sorted(app_time_map.items(), key=lambda x: x[1], reverse=True)
 
-                    for app_id, time_spent in sorted_app_time:
+                    table = QTableWidget()
+                    table.setRowCount(len(sorted_app_time))
+                    table.setColumnCount(3)
+                    table.setHorizontalHeaderLabels(["Application Name", "Time Spent", "Percentage"])
+
+                    #hide counter column
+                    table.verticalHeader().setVisible(False)
+
+                    for row_idx, (app_id, time_spent) in enumerate(sorted_app_time):
                         app = applications.get(app_id)
                         if app:
                             percentage = (time_spent / total_time * 100) if total_time.total_seconds() > 0 else 0
-                            app_info = (
-                                f"Application name: {app.name}, "
-                                f"Time spent: {time_spent}, "
-                                f"Percentage: {percentage:.2f}%"
-                            )
-                            label = QLabel(app_info, self)
-                            self.layout.addWidget(label)
+                            table.setItem(row_idx, 0, QTableWidgetItem(app.name))
+                            table.setItem(row_idx, 1, QTableWidgetItem(str(time_spent)))
+                            table.setItem(row_idx, 2, QTableWidgetItem(f"{percentage:.2f}%"))
+
+                    #auto resize columns
+                    table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+                    #add table to layout
+                    self.layout.addWidget(table)
 
                     if not app_time_map:
                         no_data_label = QLabel("No application activities found.", self)
