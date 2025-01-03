@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from time_insight.data.database import engine
 from time_insight.data.models import Application, ApplicationActivity, UserSession, UserSessionType
 from time_insight.log import log_to_console
+from apscheduler.schedulers.background import BackgroundScheduler  #scheduler for every half an hour event
 
 #init system libs
 user32 = ctypes.windll.user32
@@ -151,6 +152,8 @@ def init_tracker():
     #start a thread for main tracker
     threading.Thread(target=record_active_window, args=(engine,), daemon=True, name="ActiveWindowRecorder").start()
 
+    schedule_half_hour_tasks()  #schedule half an hour tasks
+
 if __name__ == '__main__':
     init_tracker()
 
@@ -225,3 +228,37 @@ def on_end():
         except Exception as e:
             log_to_console(f"Error in on_end: {e}")
             session.rollback()
+
+def schedule_half_hour_tasks():
+    """
+    Schedules a task to end active sessions every half hour.
+
+    This function initializes a background scheduler that runs the end_active_sessions function
+    """
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(end_active_sessions, 'cron', minute='0,30')    #run every half an hour
+    scheduler.start()
+
+def end_active_sessions():
+    """
+    Ends the last active activity and session, updates their durations, and starts a new Active session.
+
+    This function is scheduled to run every half an hour to ensure that sessions are properly ended and new sessions are started.
+    """
+    try:
+        with Session(engine) as session:
+            current_time = datetime.now(timezone.utc)
+
+            log_to_console(f"Executing half-hour sessions killer task at {current_time}")
+
+            update_last_activity(session, current_time)
+            update_last_session(session, current_time)
+            add_user_session(session, session_type_id=1, start_time=current_time)
+
+            session.commit()
+            log_to_console("Half-hour sessions killer task completed successfully.")
+
+    except Exception as e:
+        log_to_console(f"Error during half-hour sessions killer task: {e}")
+
+
