@@ -54,20 +54,15 @@ class BottomWidget(QFrame):
         table.setColumnCount(len(data.columns))
         table.setHorizontalHeaderLabels(data.columns)
 
-        if order.upper() == "DESC":
-            sorted_data = data.sort_index(ascending=False)
-        else:
-            sorted_data = data.sort_index(ascending=True)
-
-        # Заполняем таблицу данными
-        for row_idx, row in enumerate(sorted_data.itertuples(index=False)):
+        #fill table with data
+        for row_idx, row in enumerate(data.itertuples(index=False)):
             for col_idx, value in enumerate(row):
                 table.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
 
-        # Автоматическое изменение размера колонок
+        #auto resize columns
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        # Добавляем таблицу в макет
+        #add table to layout
         self.layout.addWidget(table)
 
     def clear_widget(self):
@@ -79,14 +74,115 @@ class BottomWidget(QFrame):
    
 
     def get_programs_data(self, start_date, end_date, count):
-        #get programs data here
-        return []
+        """
+        Get all programs and activities data within specified time range.
+        
+        :param: start_date: datetime, start date of the range
+        :param: end_date: datetime, end date of the range
+        :param: count: int, not implemented
+        """
+        try:
+            start_of_day = datetime(start_date.year(), start_date.month(), start_date.day(), 0, 0, 0)
+            end_of_day = datetime(end_date.year(), end_date.month(), end_date.day(), 23, 59, 59)
+
+            with Session(engine) as session:
+                programs = session.query(
+                    Application.id.label("Application ID"),
+                    Application.name.label("Name"),
+                    Application.desc.label("Description"),
+                    Application.enrollment_date.label("Enrollment Date"),
+                    Application.path.label("Path"),
+                    ApplicationActivity.id.label("Activity ID"),
+                    ApplicationActivity.window_name.label("Window Name"),
+                    ApplicationActivity.additional_info.label("Additional Info"),
+                    ApplicationActivity.session_start.label("Start Time"),
+                    ApplicationActivity.session_end.label("End Time"),
+                    ApplicationActivity.duration.label("Duration"),
+                ).join(ApplicationActivity, Application.id == ApplicationActivity.application_id) \
+                    .filter(
+                        ApplicationActivity.session_start >= start_of_day,
+                        ApplicationActivity.session_end <= end_of_day
+                    ).all()
+
+                programs_data = []
+                for program in programs:
+                    programs_data.append({
+                        "Application ID": program[0],
+                        "Name": program[1],
+                        "Description": program[2],
+                        "Enrollment Date": program[3],
+                        "Path": program[4],
+                        "Activity ID": program[5],
+                        "Window Name": program[6],
+                        "Additional Info": program[7],
+                        "Start Time": program[8],
+                        "End Time": program[9],
+                        "Duration": program[10],
+                    })
+
+                return programs_data
+        except Exception as e:
+            log_to_console(f"Error fetching programs data: {str(e)}")
 
     def get_activity_data(self, start_date, end_date, count):
-        #get activity data here
-        return []
+        """
+        Get all activities data within specified time range.
+        
+        :param: start_date: datetime, start date of the range
+        :param: end_date: datetime, end date of the range
+        :param: count: int, not implemented
+        """
+        try:
+            start_of_day = datetime(start_date.year(), start_date.month(), start_date.day(), 0, 0, 0)
+            end_of_day = datetime(end_date.year(), end_date.month(), end_date.day(), 23, 59, 59)
+
+            with Session(engine) as session:
+                activities = session.query(
+                    ApplicationActivity.id.label("Activity ID"),
+                    ApplicationActivity.application_id.label("Application ID"),
+                    ApplicationActivity.window_name.label("Window Name"),
+                    ApplicationActivity.additional_info.label("Additional Info"),
+                    ApplicationActivity.session_start.label("Start Time"),
+                    ApplicationActivity.session_end.label("End Time"),
+                    ApplicationActivity.duration.label("Duration"),
+                    Application.name.label("Program Name"),
+                    Application.desc.label("Program Description"),
+                    Application.enrollment_date.label("Enrollment Date"),
+                    Application.path.label("Program Path")
+                ).join(
+                    Application, Application.id == ApplicationActivity.application_id
+                ).filter(
+                    ApplicationActivity.session_start >= start_of_day,
+                    ApplicationActivity.session_end <= end_of_day
+                ).all()
+
+                activity_data = []
+                for activity in activities:
+                    activity_data.append({
+                        "Activity ID": activity[0],
+                        "Application ID": activity[1],
+                        "Window Name": activity[2],
+                        "Additional Info": activity[3],
+                        "Start Time": activity[4],
+                        "End Time": activity[5],
+                        "Duration": activity[6],
+                        "Program Name": activity[7],
+                        "Program Description": activity[8],
+                        "Enrollment Date": activity[9],
+                        "Program Path": activity[10]
+                    })
+
+                return activity_data
+        except Exception as e:
+            log_to_console(f"Error fetching activity data: {str(e)}")
     
     def get_computer_usage_data(self, start_date, end_date):
+        """
+        Get all user sessions data within specified time range.
+        
+        :param: start_date: datetime, start date of the range
+        :param: end_date: datetime, end date of the range
+        """
         try:
             start_of_day = datetime(start_date.year(), start_date.month(), start_date.day(), 0, 0, 0)
             end_of_day = datetime(end_date.year(), end_date.month(), end_date.day(), 23, 59, 59)
@@ -115,5 +211,4 @@ class BottomWidget(QFrame):
 
             return user_sessions_data
         except Exception as e:
-            #log_to_console(f"Error accessing database: {str(e)}")
-            raise RuntimeError(f"Error accessing database: {str(e)}")
+            log_to_console(f"Error accessing database: {str(e)}")

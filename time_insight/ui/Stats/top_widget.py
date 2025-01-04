@@ -118,11 +118,24 @@ class TopWidget(QWidget):
         match stats_type:
             case "Programs": 
                 log_to_console("Programs selected")
-            case "Activity":
-                log_to_console("Activity selected")
-                data = self.bottom_widget.get_computer_usage_data(start_date, end_date)
+
+                data = self.bottom_widget.get_programs_data(start_date, end_date, 50)
 
                 df = pd.DataFrame(data)
+                df = df.groupby(["Application ID", "Name", "Description", "Path", "Enrollment Date"], as_index=False)["Duration"].sum()
+                df["Duration"] = (df["Duration"] / 3600).round(2)
+                df = df.sort_values(by="Duration", ascending=False)
+
+                self.bottom_widget.draw_table(df)
+            case "Activity":
+                log_to_console("Activity selected")
+                data = self.bottom_widget.get_activity_data(start_date, end_date, 50)
+
+                df = pd.DataFrame(data)
+                df = df.groupby(
+                ["Application ID", "Window Name", "Program Name", "Enrollment Date", "Program Path"],as_index=False).agg({"Duration": "sum"})
+                df["Duration"] = (df["Duration"] / 3600).round(2)
+                df = df.sort_values(by="Duration", ascending=False)
 
                 self.bottom_widget.draw_table(df)
             case "Computer usage":
