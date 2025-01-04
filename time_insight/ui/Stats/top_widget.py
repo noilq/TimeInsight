@@ -70,6 +70,10 @@ class TopWidget(QWidget):
 
         self.setLayout(top_layout)
 
+        #simulate the "This month" and "Activity" selection
+        self.dropdown_time_interval.setCurrentIndex(self.dropdown_time_interval.findText("This month"))
+        self.dropdown_stats_type.setCurrentIndex(self.dropdown_stats_type.findText("Activity"))
+
     def handle_dropdown_change(self):
         time_interval = self.dropdown_time_interval.currentText()
         stats_type = self.dropdown_stats_type.currentText()
