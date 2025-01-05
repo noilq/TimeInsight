@@ -66,7 +66,7 @@ class MainWindow(QMainWindow):
 
         # Options Screen
         self.options_screen = QWidget()
-        self.options_screen.setStyleSheet("background-color: white;")
+        self.options_screen.setStyleSheet("background-color: none;")
 
         # Add screens to stacked widget
         self.stacked_widget.addWidget(self.main_screen)

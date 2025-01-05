@@ -47,10 +47,10 @@ class ActivitiesWidget(QWidget):
         #create table
         table = QTableWidget()
         table.setRowCount(len(activities))
-        table.setColumnCount(7)
+        table.setColumnCount(5)
         table.setHorizontalHeaderLabels([
-            "Activity ID", "Application ID", "Window Name", "Additional Info",
-            "Start Time", "End Time", "Duration"
+            #"Activity ID", "Application ID", 
+            "Window Name", "Additional Info", "Start Time", "End Time", "Duration"
         ])
 
         #hide counter column
@@ -58,13 +58,13 @@ class ActivitiesWidget(QWidget):
 
         #fill table with data
         for row_idx, activity in enumerate(activities):
-            table.setItem(row_idx, 0, QTableWidgetItem(str(activity.id)))
-            table.setItem(row_idx, 1, QTableWidgetItem(str(activity.application_id)))
-            table.setItem(row_idx, 2, QTableWidgetItem(activity.window_name))
-            table.setItem(row_idx, 3, QTableWidgetItem(activity.additional_info))
-            table.setItem(row_idx, 4, QTableWidgetItem(str(activity.session_start)))
-            table.setItem(row_idx, 5, QTableWidgetItem(str(activity.session_end)))
-            table.setItem(row_idx, 6, QTableWidgetItem(str(activity.duration)))
+            #table.setItem(row_idx, 0, QTableWidgetItem(str(activity.id)))
+            #table.setItem(row_idx, 1, QTableWidgetItem(str(activity.application_id)))
+            table.setItem(row_idx, 0, QTableWidgetItem(activity.window_name))
+            table.setItem(row_idx, 1, QTableWidgetItem(activity.additional_info))
+            table.setItem(row_idx, 2, QTableWidgetItem(str(activity.session_start)))
+            table.setItem(row_idx, 3, QTableWidgetItem(str(activity.session_end)))
+            table.setItem(row_idx, 4, QTableWidgetItem(str(activity.duration)))
 
         #auto resize columns
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)

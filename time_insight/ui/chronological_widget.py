@@ -1,14 +1,15 @@
 from PyQt5.QtWidgets import (
-            QWidget, QVBoxLayout, QLabel, QLabel
+    QGraphicsView, QGraphicsScene, QGraphicsRectItem, QGraphicsTextItem, QVBoxLayout, QSlider, QWidget
 )
-from time_insight.log import log_to_console
+from PyQt5.QtCore import Qt, QRectF, QDateTime, QPointF
+from PyQt5.QtGui import QColor, QBrush, QWheelEvent, QPainter, QPen
+import random
 
-class ChronologicalGraphWidget(QWidget):
+
+class ChronologicalGraphWidget(QGraphicsView):
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("border: 2px solid black; background-color: lightgray;")
-        
-        label = QLabel("", self)
-        layout = QVBoxLayout()
-        layout.addWidget(label)
-        self.setLayout(layout)  
+        self.init_ui()
+
+    def init_ui(self):
+        self.setStyleSheet("background-color: none;")

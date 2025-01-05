@@ -9,7 +9,7 @@ class HeaderWidget(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("border: 2px solid black; background-color: lightgray;")
+        self.setStyleSheet("background-color: none;")
         
         self.selected_date = QDate.currentDate()
 
@@ -83,3 +83,6 @@ class HeaderWidget(QWidget):
         self.update_date_label()
         self.calendar.hide()
         self.date_changed_signal.emit(self.selected_date)
+
+    def get_selected_date(self):
+        return self.selected_date
