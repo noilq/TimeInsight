@@ -24,8 +24,8 @@ class BottomWidget(QFrame):
 
         self.layout = QVBoxLayout(self)
 
-        self.web_view = QWebEngineView(self)  #init web view
-        self.layout.addWidget(self.web_view)
+        #self.web_view = QWebEngineView(self)  #init web view
+        #self.layout.addWidget(self.web_view)
 
         self.setLayout(self.layout)
 

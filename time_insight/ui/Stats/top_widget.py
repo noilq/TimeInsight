@@ -126,7 +126,7 @@ class TopWidget(QWidget):
                 data = self.bottom_widget.get_programs_data(start_date, end_date, 50)
 
                 df = pd.DataFrame(data)
-                df = df.groupby(["Application ID", "Name", "Description", "Path", "Enrollment Date"], as_index=False)["Duration"].sum()
+                df = df.groupby(["Name", "Description", "Path", "Enrollment Date"], as_index=False)["Duration"].sum()
                 df["Duration"] = (df["Duration"] / 3600).round(2)
                 df = df.sort_values(by="Duration", ascending=False)
 
@@ -137,7 +137,7 @@ class TopWidget(QWidget):
 
                 df = pd.DataFrame(data)
                 df = df.groupby(
-                ["Application ID", "Window Name", "Program Name", "Enrollment Date", "Program Path"],as_index=False).agg({"Duration": "sum"})
+                ["Window Name", "Program Name", "Enrollment Date", "Program Path"],as_index=False).agg({"Duration": "sum"})
                 df["Duration"] = (df["Duration"] / 3600).round(2)
                 df = df.sort_values(by="Duration", ascending=False)
 
