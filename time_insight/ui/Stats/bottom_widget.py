@@ -5,7 +5,7 @@ import plotly.express as px
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from PyQt5.QtWidgets import (
-            QVBoxLayout, QFrame, QTableWidget, QTableWidgetItem, QHeaderView
+            QVBoxLayout, QFrame, QTableWidget, QTableWidgetItem, QHeaderView, QStackedWidget
 )
 from time_insight.log import log_to_console
 
@@ -24,18 +24,24 @@ class BottomWidget(QFrame):
 
         self.layout = QVBoxLayout(self)
 
-        #self.web_view = QWebEngineView(self)  #init web view
-        #self.layout.addWidget(self.web_view)
+        self.stacked_widget = QStackedWidget(self)
+        self.layout.addWidget(self.stacked_widget)
+
+        #create web view widget (chart)
+        self.web_view_widget = QFrame(self)
+        self.web_view_layout = QVBoxLayout(self.web_view_widget)
+        self.web_view = QWebEngineView(self.web_view_widget)
+        self.web_view_layout.addWidget(self.web_view)
+        self.stacked_widget.addWidget(self.web_view_widget)
+
+        #create table widget
+        self.table_widget = QTableWidget(self)
+        self.stacked_widget.addWidget(self.table_widget)
 
         self.setLayout(self.layout)
 
     def draw_chart(self, data):
         """Draw chart with data."""
-        self.clear_widget()
-        
-        self.web_view = QWebEngineView(self)  #init web view
-        self.layout.addWidget(self.web_view)
-
         #create plotly chart
         fig = px.bar(data.reset_index(), x='Start time', y='Duration')
         fig.update_layout(xaxis_title="Date", yaxis_title="Duration (hours)")
@@ -45,33 +51,26 @@ class BottomWidget(QFrame):
         #display html in web view
         self.web_view.setHtml(html)
 
+        self.stacked_widget.setCurrentWidget(self.web_view_widget)
+
     def draw_table(self, data, order="DESC"):
         """Draw table with data."""
-        self.clear_widget()
 
-        table = QTableWidget()
-        table.setRowCount(len(data))
-        table.setColumnCount(len(data.columns))
-        table.setHorizontalHeaderLabels(data.columns)
+        self.table_widget.clear()
+        self.table_widget.setRowCount(len(data))
+        self.table_widget.setColumnCount(len(data.columns))
+        self.table_widget.setHorizontalHeaderLabels(data.columns)
 
         #fill table with data
         for row_idx, row in enumerate(data.itertuples(index=False)):
             for col_idx, value in enumerate(row):
-                table.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
+                self.table_widget.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
 
         #auto resize columns
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         #add table to layout
-        self.layout.addWidget(table)
-
-    def clear_widget(self):
-        """Clear all child widgets."""
-        for i in reversed(range(self.layout.count())):
-            widget = self.layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-   
+        self.stacked_widget.setCurrentWidget(self.table_widget)
 
     def get_programs_data(self, start_date, end_date, count):
         """
