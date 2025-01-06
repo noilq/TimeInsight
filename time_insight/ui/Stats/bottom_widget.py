@@ -51,11 +51,13 @@ class BottomWidget(QFrame):
         #display html in web view
         self.web_view.setHtml(html)
 
+        #display web view
         self.stacked_widget.setCurrentWidget(self.web_view_widget)
 
     def draw_table(self, data, order="DESC"):
         """Draw table with data."""
 
+        #create table
         self.table_widget.clear()
         self.table_widget.setRowCount(len(data))
         self.table_widget.setColumnCount(len(data.columns))
@@ -64,10 +66,14 @@ class BottomWidget(QFrame):
         #fill table with data
         for row_idx, row in enumerate(data.itertuples(index=False)):
             for col_idx, value in enumerate(row):
-                self.table_widget.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
+                item = QTableWidgetItem(str(value))
+                self.table_widget.setItem(row_idx, col_idx, item)
 
         #auto resize columns
         self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        #hide counter column
+        self.table_widget.verticalHeader().setVisible(False)
 
         #add table to layout
         self.stacked_widget.setCurrentWidget(self.table_widget)

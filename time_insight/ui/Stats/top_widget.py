@@ -5,9 +5,11 @@ from PyQt5.QtWidgets import (
             QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
             QLabel, QPushButton, QComboBox, QFrame, QDateEdit, QTableWidget, QTableWidgetItem, QHeaderView
 )
+from time_insight.ui.Stats.bottom_widget import BottomWidget
+
+from time_insight.time_converter import datetime_from_utc_to_local
 from time_insight.log import log_to_console
 
-from time_insight.ui.Stats.bottom_widget import BottomWidget
 
 class TopWidget(QWidget):
     def __init__(self, bottom_widget):
@@ -75,6 +77,7 @@ class TopWidget(QWidget):
         self.dropdown_stats_type.setCurrentIndex(self.dropdown_stats_type.findText("Activity"))
 
     def handle_dropdown_change(self):
+        #get selected values
         time_interval = self.dropdown_time_interval.currentText()
         stats_type = self.dropdown_stats_type.currentText()
         
@@ -121,35 +124,56 @@ class TopWidget(QWidget):
 
         match stats_type:
             case "Programs": 
-                log_to_console("Programs selected")
-
                 data = self.bottom_widget.get_programs_data(start_date, end_date, 50)
 
+                #convert data to df
                 df = pd.DataFrame(data)
+                #group by program and sum duration
                 df = df.groupby(["Name", "Description", "Path", "Enrollment Date"], as_index=False)["Duration"].sum()
-                df["Duration"] = (df["Duration"] / 3600).round(2)
+
+                #convert to local time
+                df["Enrollment Date"] = df["Enrollment Date"].apply(datetime_from_utc_to_local)
+                #format duration to HH:MM:SS
+                df["Duration"] = df["Duration"].apply(lambda x: f"{int(x//3600):02}:{int((x%3600)//60):02}:{int(x%60):02}")
+
+                #sort by duration
                 df = df.sort_values(by="Duration", ascending=False)
+                #rename columns
+                df = df.rename(columns={"Name": "Program Name", "Description": "Program Description", "Path": "Program Path", "Duration": "Total Hours"})
 
                 self.bottom_widget.draw_table(df)
+
             case "Activity":
-                log_to_console("Activity selected")
                 data = self.bottom_widget.get_activity_data(start_date, end_date, 50)
 
+                #convert data to df
                 df = pd.DataFrame(data)
+                #group by activity and sum duration
                 df = df.groupby(
-                ["Window Name", "Program Name", "Enrollment Date", "Program Path"],as_index=False).agg({"Duration": "sum"})
-                df["Duration"] = (df["Duration"] / 3600).round(2)
-                df = df.sort_values(by="Duration", ascending=False)
+                ["Window Name", "Program Name", "Enrollment Date", "Program Path", "Start Time", "End Time"],as_index=False).agg({"Duration": "sum"})
+                
+                #convert to local time
+                df["Enrollment Date"] = df["Enrollment Date"].apply(datetime_from_utc_to_local)
+                df["Start Time"] = df["Start Time"].apply(datetime_from_utc_to_local)
+                df["End Time"] = df["End Time"].apply(datetime_from_utc_to_local)
+
+                #format duration to HH:MM:SS
+                df["Duration"] = df["Duration"].apply(lambda x: f"{int(x//3600):02}:{int((x%3600)//60):02}:{int(x%60):02}")
+                #sort by start time
+                df = df.sort_values(by="Start Time", ascending=False)
 
                 self.bottom_widget.draw_table(df)
+
             case "Computer usage":
-                log_to_console("Computer usage selected")
                 data = self.bottom_widget.get_computer_usage_data(start_date, end_date)
 
+                #convert data to df
                 df = pd.DataFrame(data)
                 df["Start time"] = pd.to_datetime(df["Start time"])
+                #filter only active sessions
+                #group by date (day) and sum duration in hours
                 df = df[df["Session type name"]=="Active"].groupby(df["Start time"].dt.floor('d'))["Duration"].sum() / 3600
-                df.index = df.index.strftime("%d %b %Y")
+                #df.index = df.index.strftime("%d %b %Y")
 
                 #self.bottom_widget.draw_table(data, "ASC")
                 if not df.empty:

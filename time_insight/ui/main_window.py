@@ -78,6 +78,7 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(main_layout)
 
     def on_navigation(self, screen_name):
+        #navigate to screen
         if screen_name == "main":
             self.stacked_widget.setCurrentIndex(0)
         elif screen_name == "stats":
@@ -86,6 +87,9 @@ class MainWindow(QMainWindow):
             self.stacked_widget.setCurrentIndex(2)
 
     def connect_signals(self):
+        """
+        Connect signals, change screen on navigation
+        """
         self.navigation_widget.navigation_signal.connect(self.on_navigation)
 
     def closeEvent(self, event):

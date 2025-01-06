@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import (
 from sqlalchemy.orm import Session
 from time_insight.data.database import engine
 from time_insight.data.models import ApplicationActivity
+
+from time_insight.time_converter import datetime_from_utc_to_local
 from time_insight.log import log_to_console
 
 class ActivitiesWidget(QWidget):
@@ -15,26 +17,43 @@ class ActivitiesWidget(QWidget):
         
         self.layout = QVBoxLayout()
 
+        #create scroll area widget
         scroll_area_widget = QWidget()
         scroll_area_widget.setLayout(self.layout)
 
+        #add scroll area
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
         scroll_area.setWidget(scroll_area_widget)
 
+        #add scroll area to main layout
         main_layout = QVBoxLayout()
         main_layout.addWidget(scroll_area)
         self.setLayout(main_layout)
 
+        #load activities and draw table
         self.load_application_activities(QDate.currentDate())
 
     def load_application_activities(self, target_date):
+        """
+        Load activities from database and draw table.
+
+        :param target_date: QDate object representing the target date.
+        """
         try:
+            #get activities
             activities = self.get_activities_from_database(target_date)
             
             if activities:
+                #convert UTC datetimes to local timezone
+                for activity in activities:
+                    activity.session_start = datetime_from_utc_to_local(activity.session_start)
+                    activity.session_end = datetime_from_utc_to_local(activity.session_end)
+                
+                #draw table
                 self.draw_table(activities)
             else:
+                #show message if no activities found
                 no_data_label = QLabel("No application activities found.", self)
                 self.layout.addWidget(no_data_label)
 
@@ -73,9 +92,11 @@ class ActivitiesWidget(QWidget):
         self.layout.addWidget(table)
 
     def get_activities_from_database(self, target_date):
+        #convert QDate to py datetime
         if isinstance(target_date, QDate):
             target_date = target_date.toPyDate()
 
+        #get start and end of the day
         start_of_day = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
         end_of_day = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
 
@@ -91,9 +112,11 @@ class ActivitiesWidget(QWidget):
 
 
     def update_activities(self, target_date):
+        #clear layout
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
             if widget is not None:
                 widget.deleteLater()
         self.layout.update()
+        #load activities
         self.load_application_activities(target_date)

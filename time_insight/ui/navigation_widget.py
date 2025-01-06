@@ -18,6 +18,7 @@ class NavigationWidget(QWidget):
         self.stats_button = QPushButton("Stats")
         self.options_button = QPushButton("Options")
 
+        #emit signal with screen name
         self.main_button.clicked.connect(lambda: self.emit_signal("main"))
         self.stats_button.clicked.connect(lambda: self.emit_signal("stats"))
         self.options_button.clicked.connect(lambda: self.emit_signal("options"))

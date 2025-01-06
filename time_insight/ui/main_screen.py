@@ -16,35 +16,48 @@ class MainScreen(QWidget):
 
         #timer for updating widgets data
         self.update_timer = QTimer(self)
-        self.update_timer.setInterval(30000)    #30 every seconds
+        self.update_timer.setInterval(10000)    #10 every seconds
         self.update_timer.timeout.connect(self.update_widgets)
         self.update_timer.start()
 
     def init_ui(self):
+        """
+        Initialize UI of main screen
+        """
+
+        #create layout
         layout = QVBoxLayout(self)
 
+        #create header widget
         header_widget = self.create_header()
         layout.addWidget(header_widget)
 
+        #create timeline widget
         self.timeline_widget = ChronologicalGraphWidget()
         layout.addWidget(self.timeline_widget)
 
+        #create splitter
         splitter = self.create_splitter()
         
+        #add splitter to layout
         layout.addWidget(splitter)
 
-        layout.setStretch(0, 1)
-        layout.setStretch(1, 5)
-        layout.setStretch(2, 5)
+        #set stretch
+        layout.setStretch(0, 1) #header
+        layout.setStretch(1, 5) #timeline
+        layout.setStretch(2, 5) #splitter
 
+        #set layout
         self.setLayout(layout)
-        self.connect_signals()
+
+        #connect signals
+        self.connect_signals()  #update widgets on date change
 
     def create_header(self):
         header_widget = QWidget()
         header_layout = QHBoxLayout(header_widget)
 
-        self.header_left = HeaderWidget()
+        self.header_left = HeaderWidget()   #date selection widget
         self.header_center = QLabel("Header cent")
         self.header_right = QLabel("Header right")
 
@@ -55,17 +68,21 @@ class MainScreen(QWidget):
         return header_widget
     
     def create_splitter(self):
+        #create splitter
         splitter = QSplitter(Qt.Horizontal)
 
+        #create widgets
         self.applications_widget = ApplicationsWidget()
         self.applications_widget.setMinimumSize(300, 100)
 
         self.activities_widget = ActivitiesWidget()
         self.activities_widget.setMinimumSize(300, 100)
 
+        #add widgets to splitter
         splitter.addWidget(self.applications_widget)
         splitter.addWidget(self.activities_widget)
 
+        #turn off collapsible
         splitter.setCollapsible(0, False)
         splitter.setCollapsible(1, False)
         splitter.setSizes([300, 500])
@@ -73,15 +90,23 @@ class MainScreen(QWidget):
         return splitter
     
     def connect_signals(self):
+        """
+        Connect signals to header widget for date change event
+        """
         self.header_left.date_changed_signal.connect(self.on_date_changed)
 
     def on_date_changed(self, selected_date):
+        """
+        Update widgets data when date is changed
+        """
         self.activities_widget.update_activities(selected_date)
         self.applications_widget.update_applications(selected_date)
 
     def update_widgets(self):
+        """
+        Update widgets data
+        """
         #check if window is active and visible
-        log_to_console(self.header_left.get_selected_date())
         if self.isActiveWindow() and self.isVisible():
             selected_date = self.header_left.get_selected_date()    #get selected date
             self.activities_widget.update_activities(selected_date)   #update activities widget
