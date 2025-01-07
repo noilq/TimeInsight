@@ -37,6 +37,7 @@ class ChronologicalGraphWidget(QGraphicsView):
         df_user_sessions = pd.DataFrame(get_computer_usage_data(target_date, target_date))
 
         if df_activities.empty or df_user_sessions.empty:
+            self.web_view.setHtml("")  
             return
 
         #activities
@@ -70,30 +71,31 @@ class ChronologicalGraphWidget(QGraphicsView):
         df_user_sessions = df_user_sessions[df_user_sessions["Session type name"] == "Active"]
 
         #set color
-        df_user_sessions["Color"] = "#90EE90"
+        df_user_sessions["Color"] = "#1fd655"
         df_user_sessions["Category"] = "User Sessions"
 
         df_user_sessions["Tooltip"] = (
             df_user_sessions["Session type name"] + " session" + "<br>" +
-            "Time interval: " + df_activities["Start Time"].dt.strftime("%H:%M:%S") + " - " + df_activities["End Time"].dt.strftime("%H:%M:%S") + "<br>" +
+            "Time interval: " + df_user_sessions["Start Time"].dt.strftime("%H:%M:%S") + " - " + df_user_sessions["End Time"].dt.strftime("%H:%M:%S") + "<br>" +
             "Duration: " + df_user_sessions["Duration"].astype(str)
         )
         
         #combine both dataframes
         df_combined = pd.concat([df_activities, df_user_sessions])
-        log_to_console(df_combined.all)
+        
         fig = px.timeline(
-            df_user_sessions, 
+            df_combined, 
             x_start="Start Time", 
             x_end="End Time", 
             y="Category",
             color="Color",
             color_discrete_map='identity',  #fix user session color
-            hover_data={"Tooltip": True, "Category": False, "Start Time": False, "End Time": False, "Color": True}
+            hover_data={"Tooltip": True, "Category": False, "Start Time": False, "End Time": False, "Color": False}
         )
         
         fig.update_layout(showlegend=False)
         fig.update_yaxes(autorange="reversed")
+        fig.update_yaxes(title_text="") #hide "Category" title
 
         html = fig.to_html(include_plotlyjs='cdn')
         self.web_view.setHtml(html)
