@@ -105,8 +105,8 @@ class ChronologicalGraphWidget(QGraphicsView):
 
         random.seed(enrollment_number)
         
-        r = random.randint(0, 255)
-        g = random.randint(0, 255)
-        b = random.randint(0, 255)
+        r = random.randint(50, 200)
+        g = random.randint(50, 200)
+        b = random.randint(50, 200)
 
         return f"rgb({r}, {g}, {b})"
