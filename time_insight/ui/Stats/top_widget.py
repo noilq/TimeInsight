@@ -1,4 +1,3 @@
-import pandas as pd
 
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import (
@@ -7,6 +6,9 @@ from PyQt5.QtWidgets import (
 )
 from time_insight.ui.Stats.bottom_widget import BottomWidget
 
+import pandas as pd
+
+from time_insight.data.get_data import get_activity_data, get_computer_usage_data, get_programs_data
 from time_insight.time_converter import datetime_from_utc_to_local
 from time_insight.log import log_to_console
 
@@ -124,8 +126,12 @@ class TopWidget(QWidget):
 
         match stats_type:
             case "Programs": 
-                data = self.bottom_widget.get_programs_data(start_date, end_date, 50)
+                data = get_programs_data(start_date, end_date, 50)
 
+                if not data:
+                    log_to_console("data is empty")
+                    return
+                
                 #convert data to df
                 df = pd.DataFrame(data)
                 #group by program and sum duration
@@ -133,18 +139,23 @@ class TopWidget(QWidget):
 
                 #convert to local time
                 df["Enrollment Date"] = df["Enrollment Date"].apply(datetime_from_utc_to_local)
+
+                #sort by duration before formating to string
+                df = df.sort_values(by="Duration", ascending=False)
                 #format duration to HH:MM:SS
                 df["Duration"] = df["Duration"].apply(lambda x: f"{int(x//3600):02}:{int((x%3600)//60):02}:{int(x%60):02}")
 
-                #sort by duration
-                df = df.sort_values(by="Duration", ascending=False)
                 #rename columns
                 df = df.rename(columns={"Name": "Program Name", "Description": "Program Description", "Path": "Program Path", "Duration": "Total Hours"})
 
                 self.bottom_widget.draw_table(df)
 
             case "Activity":
-                data = self.bottom_widget.get_activity_data(start_date, end_date, 50)
+                data = get_activity_data(start_date, end_date, 50)
+
+                if not data:
+                    log_to_console("data is empty")
+                    return
 
                 #convert data to df
                 df = pd.DataFrame(data)
@@ -165,14 +176,18 @@ class TopWidget(QWidget):
                 self.bottom_widget.draw_table(df)
 
             case "Computer usage":
-                data = self.bottom_widget.get_computer_usage_data(start_date, end_date)
+                data = get_computer_usage_data(start_date, end_date)
 
+                if not data:
+                    log_to_console("data is empty")
+                    return
+                
                 #convert data to df
                 df = pd.DataFrame(data)
-                df["Start time"] = pd.to_datetime(df["Start time"])
+                df["Start Time"] = pd.to_datetime(df["Start Time"])
                 #filter only active sessions
                 #group by date (day) and sum duration in hours
-                df = df[df["Session type name"]=="Active"].groupby(df["Start time"].dt.floor('d'))["Duration"].sum() / 3600
+                df = df[df["Session type name"]=="Active"].groupby(df["Start Time"].dt.floor('d'))["Duration"].sum() / 3600
                 #df.index = df.index.strftime("%d %b %Y")
 
                 #self.bottom_widget.draw_table(data, "ASC")

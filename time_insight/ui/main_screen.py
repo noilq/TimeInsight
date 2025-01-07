@@ -112,4 +112,4 @@ class MainScreen(QWidget):
             selected_date = self.header_left.get_selected_date()    #get selected date
             self.activities_widget.update_activities(selected_date)   #update activities widget
             self.applications_widget.update_applications(selected_date)  #update applications widget
-            self.timeline_widget.draw_timeline_graph(selected_date)   #update timeline widget
+            #self.timeline_widget.draw_timeline_graph(selected_date) do not #update timeline widget
