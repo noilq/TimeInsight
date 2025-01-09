@@ -10,7 +10,8 @@ import pandas as pd
 
 from time_insight.data.get_data import get_activity_data, get_computer_usage_data, get_programs_data
 from time_insight.time_converter import datetime_from_utc_to_local
-from time_insight.log import log_to_console
+
+from time_insight.logging.logger import logger
 
 
 class TopWidget(QWidget):
@@ -88,27 +89,21 @@ class TopWidget(QWidget):
 
         match time_interval:
             case "All":
-                log_to_console("All selected")
                 start_date = QDate(2000, 1, 1)
                 end_date = QDate.currentDate()
             case "Today":
-                log_to_console("Today selected")
                 start_date = QDate.currentDate()
                 end_date = QDate.currentDate()
             case "This week":
-                log_to_console("This week selected")
                 start_date = QDate.currentDate().addDays(-QDate.currentDate().dayOfWeek())
                 end_date = QDate.currentDate()
             case "This month":
-                log_to_console("This month selected")
                 start_date = QDate(QDate.currentDate().year(), QDate.currentDate().month(), 1)
                 end_date = QDate.currentDate()
             case "This year":
-                log_to_console("This year selected")
                 start_date = QDate(QDate.currentDate().year(), 1, 1)
                 end_date = QDate.currentDate()
             case "Custom":
-                log_to_console("Custom selected")
                 start_date = self.from_date.date()
                 end_date = self.to_date.date()
 
@@ -120,7 +115,7 @@ class TopWidget(QWidget):
                 if end_date < start_date:
                     end_date = start_date   #set end date to match start date
             case _:
-                log_to_console("Unknown dropdown selected")
+                logger.warning("Unknown dropdown selected.")
 
         
 
@@ -129,7 +124,7 @@ class TopWidget(QWidget):
                 data = get_programs_data(start_date, end_date, 50)
 
                 if not data:
-                    log_to_console("data is empty")
+                    logger.warning("Programs data is empty.")
                     return
                 
                 #convert data to df
@@ -154,7 +149,7 @@ class TopWidget(QWidget):
                 data = get_activity_data(start_date, end_date, 50)
 
                 if not data:
-                    log_to_console("data is empty")
+                    logger.warning("Activity data is empty.")
                     return
 
                 #convert data to df
@@ -179,7 +174,7 @@ class TopWidget(QWidget):
                 data = get_computer_usage_data(start_date, end_date)
 
                 if not data:
-                    log_to_console("data is empty")
+                    logger.warning("Computer usage data is empty.")
                     return
                 
                 #convert data to df
@@ -194,6 +189,6 @@ class TopWidget(QWidget):
                 if not df.empty:
                     self.bottom_widget.draw_chart(df)
                 else:
-                    log_to_console("No data to plot")
+                    logger.warning("No computer usage data to plot.")
             case _:
-                log_to_console("Unknown dropdown selected")
+                logger.warning("Unknown dropdown selected.")

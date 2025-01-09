@@ -3,7 +3,7 @@ from time_insight.data.database import engine
 from time_insight.data.models import Application, ApplicationActivity, UserSession, UserSessionType
 from datetime import datetime
 
-from time_insight.log import log_to_console
+from time_insight.logging.logger import logger
 
 def get_programs_data(start_date, end_date, count):
     """
@@ -54,7 +54,7 @@ def get_programs_data(start_date, end_date, count):
 
             return programs_data
     except Exception as e:
-        log_to_console(f"Error fetching programs data: {str(e)}")
+        logger.error(f"Error in get_data.py - get_programs_data: {e}")
 
 def get_activity_data(start_date, end_date, count):
         """
@@ -106,7 +106,7 @@ def get_activity_data(start_date, end_date, count):
 
                 return activity_data
         except Exception as e:
-            log_to_console(f"Error fetching activity data: {str(e)}")
+            logger.error(f"Error in get_data.py - get_activity_data: {e}")
             return []
 
 def get_computer_usage_data(start_date, end_date):
@@ -140,8 +140,8 @@ def get_computer_usage_data(start_date, end_date):
                     }
                     user_sessions_data.append(session_data)
             else:
-                log_to_console("No user sessions found.")
+                logger.info("No user sessions found.")
 
         return user_sessions_data
     except Exception as e:
-        log_to_console(f"Error accessing database: {str(e)}")
+        logger.error(f"Error in get_data.py - get_computer_usage_data: {e}")

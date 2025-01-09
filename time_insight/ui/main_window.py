@@ -6,16 +6,17 @@ from PyQt5.QtWidgets import (
             QSplitter, QSystemTrayIcon, QMenu, QLabel, QStackedWidget, QPushButton
 )
 from PyQt5.QtGui import QIcon
-from time_insight.log import log_to_console
 
-from time_insight.ui.activities_widget import ActivitiesWidget
-from time_insight.ui.applications_widget import ApplicationsWidget
-from time_insight.ui.chronological_widget import ChronologicalGraphWidget
-from time_insight.ui.header_widget import HeaderWidget
+from time_insight.ui.Main.activities_widget import ActivitiesWidget
+from time_insight.ui.Main.applications_widget import ApplicationsWidget
+from time_insight.ui.Main.chronological_widget import ChronologicalGraphWidget
+from time_insight.ui.Main.header_widget import HeaderWidget
 from time_insight.ui.navigation_widget import NavigationWidget
 
-from time_insight.ui.main_screen import MainScreen
+from time_insight.ui.Main.main_screen import MainScreen
 from time_insight.ui.Stats.stats_screen import StatsScreen
+
+from time_insight.logging.logger import logger
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -33,18 +34,23 @@ class MainWindow(QMainWindow):
         self.connect_signals()
 
     def init_tray(self):
-        self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(QIcon(self.icon_path))
+        try:
+            self.tray_icon = QSystemTrayIcon(self)
+            self.tray_icon.setIcon(QIcon(self.icon_path))
 
-        self.tray_menu = QMenu()
-        open_action = self.tray_menu.addAction("Open")
-        open_action.triggered.connect(self.show)
-        quit_action = self.tray_menu.addAction("Exit")
-        quit_action.triggered.connect(self.close_app)
-        self.tray_icon.setContextMenu(self.tray_menu)
-        self.tray_icon.show()
+            self.tray_menu = QMenu()
+            open_action = self.tray_menu.addAction("Open")
+            open_action.triggered.connect(self.show)
+            quit_action = self.tray_menu.addAction("Exit")
+            quit_action.triggered.connect(self.close_app)
+            self.tray_icon.setContextMenu(self.tray_menu)
+            self.tray_icon.show()
 
-        self.tray_icon.activated.connect(self.on_tray_icon_click)
+            self.tray_icon.activated.connect(self.on_tray_icon_click)
+
+            logger.info("Tray initialization completed successfully.")
+        except Exception as e:
+            logger.error("Error during tray initialization.")
 
     def init_ui(self):
         central_widget = QWidget()

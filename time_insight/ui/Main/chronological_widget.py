@@ -11,7 +11,7 @@ import pandas as pd
 from time_insight.data.get_data import get_computer_usage_data, get_programs_data
 from time_insight.time_converter import datetime_from_utc_to_local
 
-from time_insight.log import log_to_console
+from time_insight.logging.logger import logger
 
 import random
 

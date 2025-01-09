@@ -3,10 +3,11 @@ from PyQt5.QtWidgets import (
             QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
             QLabel, QPushButton, QComboBox, QFrame, QDateEdit, QTableWidget, QTableWidgetItem, QHeaderView
 )
-from time_insight.log import log_to_console
 
 from time_insight.ui.Stats.bottom_widget import BottomWidget
 from time_insight.ui.Stats.top_widget import TopWidget
+
+from time_insight.logging.logger import logger
 
 class StatsScreen(QWidget):
     def __init__(self):
@@ -14,7 +15,7 @@ class StatsScreen(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        log_to_console("Initializing main screen UI")
+        logger.info("Initializing main screen UI.")
 
         #main layout
         main_layout = QVBoxLayout()

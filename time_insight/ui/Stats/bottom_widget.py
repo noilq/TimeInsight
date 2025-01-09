@@ -7,11 +7,12 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import (
             QVBoxLayout, QFrame, QTableWidget, QTableWidgetItem, QHeaderView, QStackedWidget
 )
-from time_insight.log import log_to_console
 
 from sqlalchemy.orm import Session
 from time_insight.data.database import engine
 from time_insight.data.models import Application, ApplicationActivity, UserSession, UserSessionType
+
+from time_insight.logging.logger import logger
 
 class BottomWidget(QFrame):
     def __init__(self):

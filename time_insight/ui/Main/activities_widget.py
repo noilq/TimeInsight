@@ -8,7 +8,7 @@ from time_insight.data.database import engine
 from time_insight.data.models import ApplicationActivity
 
 from time_insight.time_converter import datetime_from_utc_to_local
-from time_insight.log import log_to_console
+from time_insight.logging.logger import logger
 
 class ActivitiesWidget(QWidget):
     def __init__(self):

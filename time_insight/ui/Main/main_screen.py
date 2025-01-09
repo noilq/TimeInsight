@@ -2,12 +2,13 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (
             QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QLabel
 )
-from time_insight.log import log_to_console
 
-from time_insight.ui.activities_widget import ActivitiesWidget
-from time_insight.ui.applications_widget import ApplicationsWidget
-from time_insight.ui.header_widget import HeaderWidget
-from time_insight.ui.chronological_widget import ChronologicalGraphWidget
+from time_insight.ui.Main.activities_widget import ActivitiesWidget
+from time_insight.ui.Main.applications_widget import ApplicationsWidget
+from time_insight.ui.Main.header_widget import HeaderWidget
+from time_insight.ui.Main.chronological_widget import ChronologicalGraphWidget
+
+from time_insight.logging.logger import logger
 
 class MainScreen(QWidget):
     def __init__(self):

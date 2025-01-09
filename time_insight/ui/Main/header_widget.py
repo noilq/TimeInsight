@@ -2,7 +2,8 @@ from PyQt5.QtCore import Qt, QDate, pyqtSignal
 from PyQt5.QtWidgets import (
             QWidget, QHBoxLayout, QLabel, QLabel, QPushButton, QCalendarWidget
 )
-from time_insight.log import log_to_console
+
+from time_insight.logging.logger import logger
 
 class HeaderWidget(QWidget):
     date_changed_signal = pyqtSignal(QDate)

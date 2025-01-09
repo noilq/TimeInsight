@@ -2,7 +2,8 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
             QWidget, QHBoxLayout, QPushButton
 )
-from time_insight.log import log_to_console
+
+from time_insight.logging.logger import logger
 
 class NavigationWidget(QWidget):
     navigation_signal = pyqtSignal(str)
@@ -31,3 +32,4 @@ class NavigationWidget(QWidget):
 
     def emit_signal(self, screen_name):
         self.navigation_signal.emit(screen_name)
+        logger.info(f"Sreen changed to: {screen_name}.")
