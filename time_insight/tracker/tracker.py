@@ -9,8 +9,9 @@ from sqlalchemy import desc
 from datetime import datetime, timezone
 from time_insight.data.database import engine
 from time_insight.data.models import Application, ApplicationActivity, UserSession, UserSessionType
-from time_insight.log import log_to_console
 from apscheduler.schedulers.background import BackgroundScheduler  #scheduler for every half an hour event
+
+from time_insight.logging.logger import logger
 
 #init system libs
 user32 = ctypes.windll.user32
@@ -41,9 +42,11 @@ def get_active_window_info():
         process_path = get_process_filename(processID.value) if processID.value else "Unknown"
         process_name = process_path.split("\\")[-1] if process_path != "Unknown" else "Unknown"
 
+        logger.info(f"Active window: {process_name}, PID: {processID}.")
+
         return title.value, process_name, process_path, processID_value
     except Exception as e:
-        log_to_console(f"Error in get_active_window_info: {e}")
+        logger.error(f"Error in tracker.py - get_active_window_info: {e}")
         return None, None, None, None
 
 def get_process_filename(processID):
@@ -57,7 +60,7 @@ def get_process_filename(processID):
     h_process = kernel32.OpenProcess(process_flag, 0, processID)                    #opens the process
 
     if not h_process:
-        log_to_console(f"Failed to open process with ID {processID}")
+        logger.warning(f"Failed to open process with ID {processID}.")
         return None
 
     try:
@@ -80,7 +83,7 @@ def make_timezone_aware(dt):
             return dt.replace(tzinfo=timezone.utc)      #set to utc
         return dt
     except Exception as e:
-        log_to_console(f"Error in make_timezone_aware: {e}")
+        logger.error(f"Error in tracker.py - make_timezone_aware: {e}")
         return dt
 
 def record_active_window(engine, event_type="Active"):
@@ -112,6 +115,8 @@ def record_active_window(engine, event_type="Active"):
                         session.add(application)
                         session.commit()
 
+                        logger.info(f"New application created: {process_name} {process_path}.")
+
                     #check last activity
                     #if last activity hasnt ended yet and has the same title -> skip
                     last_activity = session.query(ApplicationActivity).order_by(desc(ApplicationActivity.session_start)).first()
@@ -133,9 +138,11 @@ def record_active_window(engine, event_type="Active"):
                     session.add(new_activity)
                     session.commit()
 
+                    logger.info(f"New activity created for application: {process_name}, window: {title}, PID: {processID}")
+
                 time.sleep(1)
         except Exception as e:
-            log_to_console(f"Error in record_active_window: {e}")
+            logger.error(f"Error in tracker.py - record_active_window: {e}")
             session.rollback()
 
 def init_tracker():
@@ -171,6 +178,8 @@ def update_last_session(session, end_time):
                                        make_timezone_aware(last_session.session_start)).total_seconds(), 3)
         session.commit()    #save changes
 
+        logger.info("Last session ended.")
+
 def update_last_activity(session, end_time):
     """
     Ends last active activity if its still ongoing and updates its duration.
@@ -184,6 +193,8 @@ def update_last_activity(session, end_time):
         last_activity.duration = round((make_timezone_aware(last_activity.session_end) -
                                         make_timezone_aware(last_activity.session_start)).total_seconds(), 3)
         session.commit()    #save changes
+
+        logger.info("Last activity ended.")
 
 def add_user_session(session, session_type_id, start_time):
     """
@@ -200,25 +211,29 @@ def add_user_session(session, session_type_id, start_time):
     session.add(new_session)
     session.commit()
 
+    logger.info("New user session added.")
+
 def on_start():
     """
     This function is called when the program starts. It updates the last session, 
     ends the last active session if it is still ongoing, and adds a new session of 'Active' type.
     """
+    logger.info("Application started. Ending last session and adding a new active.")
     with Session(engine) as session:
         try:
             current_time = datetime.now(timezone.utc)   #curr time
             update_last_session(session, current_time)  #end last session
             add_user_session(session, session_type_id=1, start_time=current_time)   #add new active session
         except Exception as e:
-            log_to_console(f"Error in on_start: {e}")
+            logger.error(f"Error in tracker.py - on_end end: {e}")
             session.rollback()
 
 def on_end():
     """
     This function is called when the program ends. It updates the last activity and session to mark them as ended, 
     calculates their durations, and adds a new session of 'Sleep' type.
-    """
+    """ 
+    logger.info("Application ended. Ending last session and activity, adding a new sleep session.")
     with Session(engine) as session:
         try:
             current_time = datetime.now(timezone.utc)   #curr time
@@ -226,7 +241,7 @@ def on_end():
             update_last_session(session, current_time)  #end last session
             add_user_session(session, session_type_id=2, start_time=current_time)   #add new sleep session
         except Exception as e:
-            log_to_console(f"Error in on_end: {e}")
+            logger.error(f"Error in tracker.py - on_end end: {e}")
             session.rollback()
 
 def schedule_half_hour_tasks():
@@ -249,16 +264,16 @@ def end_active_sessions():
         with Session(engine) as session:
             current_time = datetime.now(timezone.utc)
 
-            log_to_console(f"Executing half-hour sessions killer task at {current_time}")
+            logger.info(f"Executing half-hour sessions killer task at: {current_time}.")
 
             update_last_activity(session, current_time)
             update_last_session(session, current_time)
             add_user_session(session, session_type_id=1, start_time=current_time)
 
             session.commit()
-            log_to_console("Half-hour sessions killer task completed successfully.")
+            logger.info("Half-hour sessions killer task completed successfully.")
 
     except Exception as e:
-        log_to_console(f"Error during half-hour sessions killer task: {e}")
+        logger.error(f"Error during half-hour sessions killer task: {e}")
 
 

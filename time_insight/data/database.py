@@ -3,7 +3,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from time_insight.data.models import Base, UserSessionType
 from time_insight.config import DATABASE_URL
-from time_insight.log import log_to_console
+
+from time_insight.logging.logger import logger
 
 engine = create_engine(DATABASE_URL)
 
@@ -13,7 +14,8 @@ def init_db():
     #log_to_console(DATABASE_URL)
     Base.metadata.create_all(bind=engine)
 
-    
+    logger.info("Database initialization started.")
+
     session = SessionLocal()
     try:
         default_session_types = [
@@ -25,9 +27,9 @@ def init_db():
             if not existing:
                 session.add(UserSessionType(**default_session_type))
         session.commit()
-    except IntegrityError:
+    except Exception as e:
         session.rollback()
-        log_to_console("Data is already in UserSessionType table or error appeared.")
+        logger.error(f"Error during database initialization: {e}")
     finally:
         session.close()
-        log_to_console("Successfully created data in UserSessionType table.")
+        logger.info("Database initialization completed successfully.")
