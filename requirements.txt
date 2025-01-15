@@ -1,0 +1,6 @@
+APScheduler==3.11.0
+pandas==2.2.3
+plotly==5.24.1
+PyQt5==5.15.11
+PyQt5_sip==12.15.0
+SQLAlchemy==2.0.35
