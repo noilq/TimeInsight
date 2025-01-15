@@ -14,8 +14,8 @@ from apscheduler.schedulers.background import BackgroundScheduler  #scheduler fo
 from time_insight.logging.logger import logger
 
 #init system libs
-user32 = ctypes.windll.user32
-kernel32 = ctypes.windll.kernel32
+user32 = ctypes.windll.user32       #functions to work with window
+kernel32 = ctypes.windll.kernel32   #get access to processes & other system info
 
 
 def get_active_window_info():
@@ -33,7 +33,7 @@ def get_active_window_info():
         length = user32.GetWindowTextLengthW(hwnd)          #get lenght of the title
         title = ctypes.create_unicode_buffer(length + 1)    #create buffer for window title 
         user32.GetWindowTextW(hwnd, title, length + 1)      #extract title text
-
+        
         processID = ctypes.wintypes.DWORD()
         user32.GetWindowThreadProcessId(hwnd, ctypes.byref(processID))      #get id of the window process
 

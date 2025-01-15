@@ -25,7 +25,7 @@ def init_db():
         for default_session_type in default_session_types:
             existing = session.query(UserSessionType).filter_by(id=default_session_type["id"]).first()
             if not existing:
-                session.add(UserSessionType(**default_session_type))
+                session.add(UserSessionType(**default_session_type))    #типо дикшионари распаковывает звездочками
         session.commit()
     except Exception as e:
         session.rollback()
