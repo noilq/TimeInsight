@@ -1,8 +1,9 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from time_insight.data.models import Base, UserSessionType
-from time_insight.config import DATABASE_URL
+from time_insight.config import DATABASE_URL, BASE_DIR
 
 from time_insight.logging.logger import logger
 
@@ -12,6 +13,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db():
     #log_to_console(DATABASE_URL)
+
+    #create db if not exists
+    db_path = os.path.join(BASE_DIR, 'data', 'time_insight.db')
+    if not os.path.exists(db_path):
+        logger.info("Database file not found. Creating a new database.")
+
     Base.metadata.create_all(bind=engine)
 
     logger.info("Database initialization started.")

@@ -26,7 +26,13 @@ class MainWindow(QMainWindow):
         self.setGeometry(*self.GetWindowGeometry())
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
 
-        self.icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
+        if getattr(sys, 'frozen', False):
+            #builded app
+            self.icon_path = os.path.join(sys._MEIPASS, 'time_insight', 'ui', 'icon.png')
+        else:
+            #not builded app
+            self.icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
+
         self.setWindowIcon(QIcon(self.icon_path))
         
         self.init_tray()
