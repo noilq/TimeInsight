@@ -13,7 +13,7 @@ from time_insight.logging.logger import logger
 class ActivitiesWidget(QWidget):
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("background-color: none;")
+        #self.setStyleSheet("background-color: none;")
         
         self.layout = QVBoxLayout()
 

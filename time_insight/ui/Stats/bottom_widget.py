@@ -21,7 +21,7 @@ class BottomWidget(QFrame):
         self.init_ui()
 
     def init_ui(self):
-        self.setStyleSheet("background-color: none;")
+        #self.setStyleSheet("background-color: none;")
 
         self.layout = QVBoxLayout(self)
 

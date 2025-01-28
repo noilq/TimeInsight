@@ -1,11 +1,10 @@
 from PyQt5.QtWidgets import (
-    QGraphicsView, QGraphicsScene, QGraphicsRectItem, QGraphicsTextItem, QVBoxLayout, QSlider, QWidget
+    QGraphicsView, QVBoxLayout
 )
-from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QColor, QBrush, QWheelEvent, QPainter, QPen
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+from PyQt5.QtCore import QDate
+from PyQt5.QtGui import QPalette
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 import plotly.express as px
-import plotly.graph_objects as go
 import pandas as pd
 
 from time_insight.data.get_data import get_computer_usage_data, get_programs_data
@@ -21,7 +20,7 @@ class ChronologicalGraphWidget(QGraphicsView):
         self.init_ui()
 
     def init_ui(self):
-        self.setStyleSheet("background-color: none;")
+        #self.setStyleSheet("background-color: none;")
 
         self.layout = QVBoxLayout(self)
 
@@ -71,7 +70,7 @@ class ChronologicalGraphWidget(QGraphicsView):
         df_user_sessions = df_user_sessions[df_user_sessions["Session type name"] == "Active"]
 
         #set color
-        df_user_sessions["Color"] = "#1fd655"
+        df_user_sessions["Color"] = "#1fd655"   #light green
         df_user_sessions["Category"] = "User Sessions"
 
         df_user_sessions["Tooltip"] = (
@@ -92,8 +91,14 @@ class ChronologicalGraphWidget(QGraphicsView):
             color_discrete_map='identity',  #fix user session color
             hover_data={"Tooltip": True, "Category": False, "Start Time": False, "End Time": False, "Color": False}
         )
-        
-        fig.update_layout(showlegend=False)
+
+        palette = self.palette()
+        fig.update_layout(
+            showlegend=False,
+            plot_bgcolor="#3c3c3c",
+            paper_bgcolor="#2b2b2b",
+            font=dict(color="#ffffff")
+        )
         fig.update_yaxes(autorange="reversed")
         fig.update_yaxes(title_text="") #hide "Category" title
 

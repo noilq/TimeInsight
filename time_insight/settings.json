@@ -1,0 +1,9 @@
+{
+    "theme": "light",
+    "theme_main_color": "#ffffff",
+    "theme_secondary_color": "#f0f0f0",
+    "theme_third_color": "#cccccc",
+    "theme_text_color": "#000000",
+    "language": "en",
+    "autostart": true
+}

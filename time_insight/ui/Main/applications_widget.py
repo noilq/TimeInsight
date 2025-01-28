@@ -11,7 +11,7 @@ from time_insight.logging.logger import logger
 class ApplicationsWidget(QWidget):
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("background-color: none;")
+        #self.setStyleSheet("background-color: none;")
         
         self.layout = QVBoxLayout()
 

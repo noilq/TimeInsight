@@ -10,7 +10,7 @@ class HeaderWidget(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.setStyleSheet("background-color: none;")
+        #self.setStyleSheet("background-color: none;")
         
         self.selected_date = QDate.currentDate()
 

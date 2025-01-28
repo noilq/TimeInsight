@@ -1,20 +1,16 @@
 import sys
 import os
-from PyQt5.QtCore import Qt, pyqtSignal, QDateTime
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
-            QApplication, QWidget, QDesktopWidget, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel,
-            QSplitter, QSystemTrayIcon, QMenu, QLabel, QStackedWidget, QPushButton
+            QApplication, QWidget, QDesktopWidget, QMainWindow, QVBoxLayout, QSystemTrayIcon, QMenu, QStackedWidget
 )
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPalette, QColor
 
-from time_insight.ui.Main.activities_widget import ActivitiesWidget
-from time_insight.ui.Main.applications_widget import ApplicationsWidget
-from time_insight.ui.Main.chronological_widget import ChronologicalGraphWidget
-from time_insight.ui.Main.header_widget import HeaderWidget
 from time_insight.ui.navigation_widget import NavigationWidget
 
 from time_insight.ui.Main.main_screen import MainScreen
 from time_insight.ui.Stats.stats_screen import StatsScreen
+from time_insight.ui.Settings.settings_screen import SettingsScreen
 
 from time_insight.logging.logger import logger
 
@@ -36,6 +32,9 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(self.icon_path))
         
         self.init_tray()
+        self.init_styles(main_color="#2b2b2b", secondary_color="#3c3c3c", third_color="#5c5c5c", text_color="#ffffff")
+        self.main_color = "#2b2b2b"
+        #self.init_styles(main_color="#ffffff", secondary_color="#f0f0f0", third_color="#cccccc", text_color="#000000")
         self.init_ui()
         self.connect_signals()
 
@@ -77,13 +76,12 @@ class MainWindow(QMainWindow):
         self.stats_screen = StatsScreen()
 
         # Options Screen
-        self.options_screen = QWidget()
-        self.options_screen.setStyleSheet("background-color: none;")
+        self.settings_screen = SettingsScreen()
 
         # Add screens to stacked widget
         self.stacked_widget.addWidget(self.main_screen)
         self.stacked_widget.addWidget(self.stats_screen)
-        self.stacked_widget.addWidget(self.options_screen)
+        self.stacked_widget.addWidget(self.settings_screen)
 
         main_layout.addWidget(self.stacked_widget)
 
@@ -95,7 +93,7 @@ class MainWindow(QMainWindow):
             self.stacked_widget.setCurrentIndex(0)
         elif screen_name == "stats":
             self.stacked_widget.setCurrentIndex(1)
-        elif screen_name == "options":
+        elif screen_name == "settings":
             self.stacked_widget.setCurrentIndex(2)
 
     def connect_signals(self):
@@ -142,6 +140,78 @@ class MainWindow(QMainWindow):
 
         return x, y, width, height
 
+    def init_styles(self, main_color, secondary_color, third_color, text_color):
+        self.color_theme = f"""
+            QWidget {{
+                background-color: {main_color};
+                color: {text_color};
+            }}
+            QPushButton {{
+                background-color: {secondary_color};
+                color: {text_color};
+                border: 1px solid {third_color};
+                border-radius: 5px;
+                padding: 5px;
+            }}
+            QPushButton:hover {{
+                background-color: {third_color};
+            }}
+            QLineEdit {{
+                background-color: {main_color};
+                color: {text_color};
+                border: 1px solid {third_color};
+                padding: 5px;
+            }}
+            QLabel {{
+                color: {text_color};
+            }}
+
+            QTableWidget {{
+                background-color: {main_color};
+                border: 1px solid {third_color};
+                gridline-color: {third_color};
+            }}
+            QHeaderView::section {{
+                background-color: {secondary_color};
+                color: {text_color};
+                padding: 4px;
+                border: 1px solid {third_color};
+            }}
+
+            QCalendarWidget {{
+                background-color: {main_color};
+                border: 1px solid {third_color};
+            }}
+            QCalendarWidget QToolButton {{
+                background-color: {secondary_color};
+                border: none;
+                color: {text_color};
+                padding: 5px;
+            }}
+            QCalendarWidget QAbstractItemView {{
+                background-color: {main_color};
+                selection-background-color: {third_color};
+            }}
+
+            QDateEdit {{
+                background-color: {main_color};
+                color: {text_color};
+                border: 1px solid {third_color};
+                border-radius: 5px;
+                padding: 2px;
+            }}
+        """
+
+        self.setStyleSheet(self.color_theme)
+         
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(main_color))
+        palette.setColor(QPalette.Button, QColor(secondary_color))
+        palette.setColor(QPalette.Highlight, QColor(third_color))
+        palette.setColor(QPalette.WindowText, QColor(text_color))
+        
+        self.setPalette(palette)
+        
 if __name__ == "__main__":
     app = QApplication(sys.argv)    
 
