@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import plotly.express as px
 
 from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -8,10 +6,7 @@ from PyQt5.QtWidgets import (
             QVBoxLayout, QFrame, QTableWidget, QTableWidgetItem, QHeaderView, QStackedWidget
 )
 
-from sqlalchemy.orm import Session
-from time_insight.data.database import engine
-from time_insight.data.models import Application, ApplicationActivity, UserSession, UserSessionType
-
+from time_insight.settings import get_setting
 from time_insight.logging.logger import logger
 
 class BottomWidget(QFrame):
@@ -45,7 +40,43 @@ class BottomWidget(QFrame):
         """Draw chart with data."""
         #create plotly chart
         fig = px.bar(data.reset_index(), x='Start Time', y='Duration')
-        fig.update_layout(xaxis_title="Date", yaxis_title="Duration (hours)")
+        fig.update_layout(
+            xaxis_title="Date", 
+            yaxis_title="Duration (hours)",
+            plot_bgcolor=get_setting("theme_secondary_color"),
+            paper_bgcolor=get_setting("theme_main_color"),
+            font=dict(color=get_setting("theme_text_color"))
+        )
+        
+        #convert plotly chart to html
+        html = fig.to_html(include_plotlyjs='cdn')
+        #display html in web view
+        self.web_view.setHtml(html)
+
+        #display web view
+        self.stacked_widget.setCurrentWidget(self.web_view_widget)
+
+    def draw_programs_chart(self, data):
+        """Draw chart with data."""
+        #create plotly chart
+        fig = px.bar(
+            data.reset_index(), 
+            x="Program Name", 
+            y="Duration in hours", 
+            color="Color",
+            color_discrete_map="identity",
+            hover_data={"Program Name": True, "Total Hours": True, "Color": False}
+            #log_y=True
+        )
+
+        fig.update_layout(
+            xaxis_title="Date", 
+            yaxis_title="Duration (hours)",
+            plot_bgcolor=get_setting("theme_secondary_color"),
+            paper_bgcolor=get_setting("theme_main_color"),
+            font=dict(color=get_setting("theme_text_color")),
+            xaxis=dict(autorange="reversed")
+        )
         
         #convert plotly chart to html
         html = fig.to_html(include_plotlyjs='cdn')

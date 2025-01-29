@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import (
 from sqlalchemy.orm import Session
 from time_insight.data.database import engine
 from time_insight.data.models import ApplicationActivity, Application
+
+from time_insight.settings import get_setting
 from time_insight.logging.logger import logger
 
 class ApplicationsWidget(QWidget):

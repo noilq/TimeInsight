@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import (
     QGraphicsView, QVBoxLayout
 )
 from PyQt5.QtCore import QDate
-from PyQt5.QtGui import QPalette
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 import plotly.express as px
 import pandas as pd
@@ -96,8 +95,8 @@ class ChronologicalGraphWidget(QGraphicsView):
         palette = self.palette()
         fig.update_layout(
             showlegend=False,
-            plot_bgcolor=get_setting("theme_main_color"),
-            paper_bgcolor=get_setting("theme_secondary_color"),
+            plot_bgcolor=get_setting("theme_secondary_color"),
+            paper_bgcolor=get_setting("theme_main_color"),
             font=dict(color=get_setting("theme_text_color"))
         )
         fig.update_yaxes(autorange="reversed")

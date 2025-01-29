@@ -1,11 +1,9 @@
-
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import (
-            QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-            QLabel, QPushButton, QComboBox, QFrame, QDateEdit, QTableWidget, QTableWidgetItem, QHeaderView
+            QWidget, QHBoxLayout, QLabel, QLabel, QPushButton, QComboBox, QDateEdit
 )
 from time_insight.ui.Stats.bottom_widget import BottomWidget
-
+import random
 import pandas as pd
 
 from time_insight.data.get_data import get_activity_data, get_computer_usage_data, get_programs_data
@@ -138,12 +136,19 @@ class TopWidget(QWidget):
                 #sort by duration before formating to string
                 df = df.sort_values(by="Duration", ascending=False)
                 #format duration to HH:MM:SS
-                df["Duration"] = df["Duration"].apply(lambda x: f"{int(x//3600):02}:{int((x%3600)//60):02}:{int(x%60):02}")
+                df["Total Hours"] = df["Duration"].apply(lambda x: f"{int(x//3600):02}:{int((x%3600)//60):02}:{int(x%60):02}")
+                df["Duration in hours"] = df["Duration"] / 3600
+                #apply color to each program
+                df["Color"] = df["Enrollment Date"].apply(self.get_color)
 
+                #shorten program name
+                df["Name"] = df["Name"].str.slice(0, 20)
+                
+                df = df.sort_values(by="Duration", ascending=True)
                 #rename columns
-                df = df.rename(columns={"Name": "Program Name", "Description": "Program Description", "Path": "Program Path", "Duration": "Total Hours"})
+                df = df.rename(columns={"Name": "Program Name", "Description": "Program Description", "Path": "Program Path"})
 
-                self.bottom_widget.draw_table(df)
+                self.bottom_widget.draw_programs_chart(df)
 
             case "Activity":
                 data = get_activity_data(start_date, end_date, 50)
@@ -192,3 +197,14 @@ class TopWidget(QWidget):
                     logger.warning("No computer usage data to plot.")
             case _:
                 logger.warning("Unknown dropdown selected.")
+
+    def get_color(self, enrollment_date):
+        enrollment_number = int(enrollment_date.timestamp())
+
+        random.seed(enrollment_number)
+        
+        r = random.randint(50, 200)
+        g = random.randint(50, 200)
+        b = random.randint(50, 200)
+
+        return f"rgb({r}, {g}, {b})"

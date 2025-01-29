@@ -4,7 +4,7 @@ import ctypes.wintypes
 import threading
 import time
 import atexit
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from datetime import datetime, timezone
 from time_insight.data.database import engine

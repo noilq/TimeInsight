@@ -95,9 +95,10 @@ class MainWindow(QMainWindow):
         elif screen_name == "settings":
             self.stacked_widget.setCurrentIndex(2)
 
-    def on_ui_update(self):
-        print("bla")
-        self.init_styles()
+    def on_ui_update(self, update_type):
+        if update_type == "theme":
+            logger.info("Updating UI.")
+            self.init_styles()
 
     def connect_signals(self):
         """

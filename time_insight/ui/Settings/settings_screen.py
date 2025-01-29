@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 
 from time_insight.settings import get_setting, set_setting
-from time_insight.restart import restart_application
+from time_insight.logging.logger import logger
 
 class SettingsScreen(QWidget):
     update_signal = pyqtSignal(str)
@@ -106,6 +106,7 @@ class SettingsScreen(QWidget):
 
         if self.curr_section == "Main":
             blabla = None
+            self.update_signal.emit("var")
         elif self.curr_section == "UI":
             selected_theme = self.theme_combo_box.currentText()
             if selected_theme == "Light":
@@ -114,11 +115,13 @@ class SettingsScreen(QWidget):
                 set_setting("theme_secondary_color", "#f0f0f0")
                 set_setting("theme_third_color", "#cccccc")
                 set_setting("theme_text_color", "#000000")
+                logger.info("Theme changed to Light.")
+                self.update_signal.emit("theme")
             elif selected_theme == "Dark":
                 set_setting("theme", selected_theme)
                 set_setting("theme_main_color", "#2b2b2b")
                 set_setting("theme_secondary_color", "#3c3c3c")
                 set_setting("theme_third_color", "#5c5c5c")
                 set_setting("theme_text_color", "#ffffff")
-            print("anus")
-            self.update_signal.emit("ui_update")
+                logger.info("Theme changed to Dark.")
+                self.update_signal.emit("theme")
