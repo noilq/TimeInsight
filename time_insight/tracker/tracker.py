@@ -11,12 +11,14 @@ from time_insight.data.database import engine
 from time_insight.data.models import Application, ApplicationActivity, UserSession, UserSessionType
 from apscheduler.schedulers.background import BackgroundScheduler  #scheduler for every half an hour event
 
+from time_insight.settings import get_setting
 from time_insight.logging.logger import logger
 
 #init system libs
 user32 = ctypes.windll.user32       #functions to work with window
 kernel32 = ctypes.windll.kernel32   #get access to processes & other system info
 
+interval = get_setting("window_checking_interval")
 
 def get_active_window_info():
     """
@@ -121,7 +123,7 @@ def record_active_window(engine, event_type="Active"):
                     #if last activity hasnt ended yet and has the same title -> skip
                     last_activity = session.query(ApplicationActivity).order_by(desc(ApplicationActivity.session_start)).first()
                     if last_activity and last_activity.window_name == title and last_activity.session_end is None:
-                        time.sleep(1)
+                        time.sleep(interval)
                         continue
                     
                     #close previous activity if hasnt yet been completed
@@ -140,7 +142,7 @@ def record_active_window(engine, event_type="Active"):
 
                     logger.info(f"New activity created for application: {process_name}, window: {title}, PID: {processID}")
 
-                time.sleep(1)
+                time.sleep(interval)
         except Exception as e:
             logger.error(f"Error in tracker.py - record_active_window: {e}")
             session.rollback()
@@ -277,3 +279,6 @@ def end_active_sessions():
         logger.error(f"Error during half-hour sessions killer task: {e}")
 
 
+def set_interval(var):
+    global interval 
+    interval = int(var)

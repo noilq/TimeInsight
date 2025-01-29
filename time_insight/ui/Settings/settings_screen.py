@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
     QStackedWidget, QSlider, QComboBox, QRadioButton, QCheckBox, QLineEdit, QSizePolicy
 )
 from PyQt5.QtCore import Qt
+from time_insight.tracker.tracker import set_interval
 
 from time_insight.settings import get_setting, set_setting
 from time_insight.logging.logger import logger
@@ -25,7 +26,7 @@ class SettingsScreen(QWidget):
         self.sidebar = QVBoxLayout()
         self.sidebar.setSpacing(2)  #minimize space between buttons
         self.buttons = {}
-        sections = ["Main", "UI", "Settings 3", "Settings 4", "About"]
+        sections = ["General", "UI", "Settings 3", "Settings 4", "About"]
         
         for section in sections:
             btn = QPushButton(section)
@@ -66,20 +67,21 @@ class SettingsScreen(QWidget):
         central_layout.addLayout(container_layout)
         self.setLayout(central_layout)
         
-        self.switch_section("Main")
+        self.switch_section("General")
     
     def create_settings_page(self, section):
         page = QWidget()
         layout = QVBoxLayout()
         layout.setSpacing(5)
         layout.setAlignment(Qt.AlignTop)
-        layout.addWidget(QLabel(f"Settings for {section}"))
+        layout.addWidget(QLabel(section))
         
-        if section == "Main":
-            layout.addWidget(QLabel("Setting"))
-            layout.addWidget(QLineEdit("10"))
-            layout.addWidget(QLabel("Super slider"))
-            layout.addWidget(QSlider())
+        if section == "General":
+            layout.addWidget(QLabel("Frequency of checking active window"))
+            self.interval_combo_box = QComboBox()
+            self.interval_combo_box.addItems(["1", "2", "3", "4", "5", "10", "15", "30"])
+            self.interval_combo_box.setCurrentText(get_setting("window_cheking_interval"))
+            layout.addWidget(self.interval_combo_box)
         elif section == "UI":
             #color theme dropbox
             layout.addWidget(QLabel("Color theme"))
@@ -104,8 +106,11 @@ class SettingsScreen(QWidget):
         
     def save_settings(self):
 
-        if self.curr_section == "Main":
-            blabla = None
+        if self.curr_section == "General":
+            window_cheking_interval = self.interval_combo_box.currentText()
+            set_setting("window_cheking_interval", window_cheking_interval)
+            set_interval(window_cheking_interval)     #set new window checking interval
+            logger.info("Window checking interval changed to " + window_cheking_interval)
             self.update_signal.emit("var")
         elif self.curr_section == "UI":
             selected_theme = self.theme_combo_box.currentText()

@@ -13,7 +13,8 @@ DEFAULT_SETTINGS = {
     "theme_text_color": "#000000",
     "language": "en",
     "autostart": True,
-    "sosal": False
+    "sosal": False,
+    "window_cheking_interval": "1"
 }
 
 def load_settings():
