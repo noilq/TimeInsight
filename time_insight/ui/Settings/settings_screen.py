@@ -1,12 +1,19 @@
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
     QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel,
     QStackedWidget, QSlider, QComboBox, QRadioButton, QCheckBox, QLineEdit, QSizePolicy
 )
 from PyQt5.QtCore import Qt
 
+from time_insight.settings import get_setting, set_setting
+from time_insight.restart import restart_application
+
 class SettingsScreen(QWidget):
+    update_signal = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
+
         self.setWindowTitle("Settings")
         self.setFixedSize(600, 400)
 
@@ -32,7 +39,8 @@ class SettingsScreen(QWidget):
         
         self.stacked_widget = QStackedWidget()
         self.pages = {}
-        
+        self.curr_section = None
+
         for section in sections:
             page = self.create_settings_page(section)
             self.stacked_widget.addWidget(page)
@@ -41,11 +49,12 @@ class SettingsScreen(QWidget):
         main_layout.addWidget(self.stacked_widget)
         
         footer_layout = QHBoxLayout()
-        self.ok_button = QPushButton("Apply")
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.save_settings)
         self.cancel_button = QPushButton("Cancel")
-        self.ok_button.setFixedWidth(100)
+        self.save_button.setFixedWidth(100)
         self.cancel_button.setFixedWidth(100)
-        footer_layout.addWidget(self.ok_button)
+        footer_layout.addWidget(self.save_button)
         footer_layout.addWidget(self.cancel_button)
         footer_layout.setAlignment(Qt.AlignRight)
         
@@ -72,8 +81,12 @@ class SettingsScreen(QWidget):
             layout.addWidget(QLabel("Super slider"))
             layout.addWidget(QSlider())
         elif section == "UI":
-            layout.addWidget(QLabel("Mega dropbox"))
-            layout.addWidget(QComboBox())
+            #color theme dropbox
+            layout.addWidget(QLabel("Color theme"))
+            self.theme_combo_box = QComboBox()
+            self.theme_combo_box.addItems(["Light", "Dark", "Custom"])    #custom not implemented yet
+            self.theme_combo_box.setCurrentText(get_setting("theme"))
+            layout.addWidget(self.theme_combo_box)
         elif section == "Settings 3":
             layout.addWidget(QLabel("Sosal"))
             layout.addWidget(QRadioButton("Da"))
@@ -87,3 +100,25 @@ class SettingsScreen(QWidget):
     
     def switch_section(self, section):
         self.stacked_widget.setCurrentWidget(self.pages[section])
+        self.curr_section = section
+        
+    def save_settings(self):
+
+        if self.curr_section == "Main":
+            blabla = None
+        elif self.curr_section == "UI":
+            selected_theme = self.theme_combo_box.currentText()
+            if selected_theme == "Light":
+                set_setting("theme", selected_theme)
+                set_setting("theme_main_color", "#ffffff")
+                set_setting("theme_secondary_color", "#f0f0f0")
+                set_setting("theme_third_color", "#cccccc")
+                set_setting("theme_text_color", "#000000")
+            elif selected_theme == "Dark":
+                set_setting("theme", selected_theme)
+                set_setting("theme_main_color", "#2b2b2b")
+                set_setting("theme_secondary_color", "#3c3c3c")
+                set_setting("theme_third_color", "#5c5c5c")
+                set_setting("theme_text_color", "#ffffff")
+            print("anus")
+            self.update_signal.emit("ui_update")

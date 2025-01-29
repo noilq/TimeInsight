@@ -12,6 +12,7 @@ from time_insight.ui.Main.main_screen import MainScreen
 from time_insight.ui.Stats.stats_screen import StatsScreen
 from time_insight.ui.Settings.settings_screen import SettingsScreen
 
+from time_insight.settings import get_setting
 from time_insight.logging.logger import logger
 
 class MainWindow(QMainWindow):
@@ -32,9 +33,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(self.icon_path))
         
         self.init_tray()
-        self.init_styles(main_color="#2b2b2b", secondary_color="#3c3c3c", third_color="#5c5c5c", text_color="#ffffff")
-        self.main_color = "#2b2b2b"
-        #self.init_styles(main_color="#ffffff", secondary_color="#f0f0f0", third_color="#cccccc", text_color="#000000")
+        self.init_styles()
         self.init_ui()
         self.connect_signals()
 
@@ -96,11 +95,16 @@ class MainWindow(QMainWindow):
         elif screen_name == "settings":
             self.stacked_widget.setCurrentIndex(2)
 
+    def on_ui_update(self):
+        print("bla")
+        self.init_styles()
+
     def connect_signals(self):
         """
         Connect signals, change screen on navigation
         """
         self.navigation_widget.navigation_signal.connect(self.on_navigation)
+        self.settings_screen.update_signal.connect(self.on_ui_update)
 
     def closeEvent(self, event):
         event.ignore()
@@ -140,7 +144,11 @@ class MainWindow(QMainWindow):
 
         return x, y, width, height
 
-    def init_styles(self, main_color, secondary_color, third_color, text_color):
+    def init_styles(self):
+        main_color = get_setting("theme_main_color")
+        secondary_color = get_setting("theme_secondary_color")
+        third_color = get_setting("theme_third_color")
+        text_color = get_setting("theme_text_color")
         self.color_theme = f"""
             QWidget {{
                 background-color: {main_color};
@@ -211,6 +219,9 @@ class MainWindow(QMainWindow):
         palette.setColor(QPalette.WindowText, QColor(text_color))
         
         self.setPalette(palette)
+
+    def update_ui(self):
+        print("zalupa rock")
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)    

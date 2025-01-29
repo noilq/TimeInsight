@@ -10,6 +10,7 @@ import pandas as pd
 from time_insight.data.get_data import get_computer_usage_data, get_programs_data
 from time_insight.time_converter import datetime_from_utc_to_local
 
+from time_insight.settings import get_setting
 from time_insight.logging.logger import logger
 
 import random
@@ -95,9 +96,9 @@ class ChronologicalGraphWidget(QGraphicsView):
         palette = self.palette()
         fig.update_layout(
             showlegend=False,
-            plot_bgcolor="#3c3c3c",
-            paper_bgcolor="#2b2b2b",
-            font=dict(color="#ffffff")
+            plot_bgcolor=get_setting("theme_main_color"),
+            paper_bgcolor=get_setting("theme_secondary_color"),
+            font=dict(color=get_setting("theme_text_color"))
         )
         fig.update_yaxes(autorange="reversed")
         fig.update_yaxes(title_text="") #hide "Category" title

@@ -6,13 +6,14 @@ from time_insight.logging.logger import logger
 SETTINGS_FILE = 'settings.json'
 
 DEFAULT_SETTINGS = {
-    "theme": "light",
+    "theme": "Light",
     "theme_main_color": "#ffffff",
     "theme_secondary_color": "#f0f0f0",
     "theme_third_color": "#cccccc",
     "theme_text_color": "#000000",
     "language": "en",
-    "autostart": True
+    "autostart": True,
+    "sosal": False
 }
 
 def load_settings():
@@ -21,8 +22,8 @@ def load_settings():
             with open(SETTINGS_FILE, 'r') as f:
                 settings = json.load(f)
             return settings
-        except json.JSONDecodeError:
-            logger.error("Error while loading settings: JSONDecodeError, using default settings.")
+        except Exception as e:
+            logger.error(e)
             return DEFAULT_SETTINGS
     else:
         return DEFAULT_SETTINGS
@@ -31,8 +32,8 @@ def save_settings(settings):
     try:
         with open(SETTINGS_FILE, 'w') as f:
             json.dump(settings, f, indent=4)
-    except IOError as e:
-        logger.error("Error while saving settings: IOError.")
+    except Exception as e:
+        logger.error(e)
 
 def reset_settings():
     save_settings(DEFAULT_SETTINGS)
