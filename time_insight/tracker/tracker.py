@@ -18,7 +18,7 @@ from time_insight.logging.logger import logger
 user32 = ctypes.windll.user32       #functions to work with window
 kernel32 = ctypes.windll.kernel32   #get access to processes & other system info
 
-interval = get_setting("window_checking_interval")
+interval = int(get_setting("window_checking_interval"))
 
 def get_active_window_info():
     """

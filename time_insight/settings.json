@@ -6,5 +6,6 @@
     "theme_text_color": "#000000",
     "language": "en",
     "autostart": true,
-    "sosal": false
+    "sosal": false,
+    "window_checking_interval": "1"
 }

@@ -92,7 +92,6 @@ class ChronologicalGraphWidget(QGraphicsView):
             hover_data={"Tooltip": True, "Category": False, "Start Time": False, "End Time": False, "Color": False}
         )
 
-        palette = self.palette()
         fig.update_layout(
             showlegend=False,
             plot_bgcolor=get_setting("theme_secondary_color"),

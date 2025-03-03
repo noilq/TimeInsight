@@ -14,7 +14,7 @@ DEFAULT_SETTINGS = {
     "language": "en",
     "autostart": True,
     "sosal": False,
-    "window_cheking_interval": "1"
+    "window_checking_interval": "1"
 }
 
 def load_settings():
