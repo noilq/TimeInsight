@@ -17,7 +17,7 @@ class MainScreen(QWidget):
 
         #timer for updating widgets data
         self.update_timer = QTimer(self)
-        self.update_timer.setInterval(10000)    #10 every seconds
+        self.update_timer.setInterval(100000)    #100 every seconds
         self.update_timer.timeout.connect(self.update_widgets)
         self.update_timer.start()
 
@@ -73,11 +73,11 @@ class MainScreen(QWidget):
         splitter = QSplitter(Qt.Horizontal)
 
         #create widgets
-        self.applications_widget = ApplicationsWidget()
-        self.applications_widget.setMinimumSize(300, 100)
-
         self.activities_widget = ActivitiesWidget()
         self.activities_widget.setMinimumSize(300, 100)
+
+        self.applications_widget = ApplicationsWidget(self.timeline_widget, self.activities_widget)
+        self.applications_widget.setMinimumSize(300, 100)
 
         #add widgets to splitter
         splitter.addWidget(self.applications_widget)

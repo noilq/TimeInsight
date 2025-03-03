@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 )
 from sqlalchemy.orm import Session
 from time_insight.data.database import engine
-from time_insight.data.models import ApplicationActivity
+from time_insight.data.models import ApplicationActivity, Application
 
 from time_insight.time_converter import datetime_from_utc_to_local
 from time_insight.logging.logger import logger
@@ -34,7 +34,7 @@ class ActivitiesWidget(QWidget):
         #load activities and draw table
         self.load_application_activities(QDate.currentDate())
 
-    def load_application_activities(self, target_date):
+    def load_application_activities(self, target_date, program_filter=None):
         """
         Load activities from database and draw table.
 
@@ -42,7 +42,7 @@ class ActivitiesWidget(QWidget):
         """
         try:
             #get activities
-            activities = self.get_activities_from_database(target_date)
+            activities = self.get_activities_from_database(target_date, program_filter)
             
             if activities:
                 #convert UTC datetimes to local timezone
@@ -91,7 +91,7 @@ class ActivitiesWidget(QWidget):
         #add table to layout
         self.layout.addWidget(table)
 
-    def get_activities_from_database(self, target_date):
+    def get_activities_from_database(self, target_date, program_filter=None):
         #convert QDate to py datetime
         if isinstance(target_date, QDate):
             target_date = target_date.toPyDate()
@@ -102,16 +102,21 @@ class ActivitiesWidget(QWidget):
 
         try:
             with Session(engine) as session:
-                activities = session.query(ApplicationActivity).filter(
+                activities = session.query(ApplicationActivity).join(Application).filter(
                     ApplicationActivity.session_start >= start_of_day,
                     ApplicationActivity.session_end <= end_of_day
-                ).all()
-                return activities
+                )
+                
+                #filter programs
+                if program_filter:
+                    activities = activities.filter(Application.name.in_(program_filter))
+
+                return activities.all()
         except Exception as e:
             raise RuntimeError(f"Error accessing database: {str(e)}")
 
 
-    def update_activities(self, target_date):
+    def update_activities(self, target_date, program_filter=None):
         #clear layout
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
@@ -119,4 +124,4 @@ class ActivitiesWidget(QWidget):
                 widget.deleteLater()
         self.layout.update()
         #load activities
-        self.load_application_activities(target_date)
+        self.load_application_activities(target_date, program_filter)

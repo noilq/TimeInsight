@@ -30,14 +30,17 @@ class ChronologicalGraphWidget(QGraphicsView):
         self.layout.addWidget(self.web_view)
         self.setLayout(self.layout)
 
-    def draw_timeline_graph(self, target_date):
+    def draw_timeline_graph(self, target_date, program_filter=None):
         
         df_activities = pd.DataFrame(get_programs_data(target_date, target_date, 50))
         df_user_sessions = pd.DataFrame(get_computer_usage_data(target_date, target_date))
 
         if df_activities.empty or df_user_sessions.empty:
-            self.web_view.setHtml("")  
+            self.web_view.setHtml("")
             return
+
+        if program_filter:
+            df_activities = df_activities[df_activities['Name'].isin(program_filter)]
 
         #activities
         df_activities["Start Time"] = pd.to_datetime(df_activities["Start Time"])
@@ -114,3 +117,22 @@ class ChronologicalGraphWidget(QGraphicsView):
         b = random.randint(50, 200)
 
         return f"rgb({r}, {g}, {b})"
+
+class ProgramList:
+    def __init__(self):
+        self.programs = []
+
+    def add_program(self, program_name):
+        if program_name not in self.programs:
+            self.programs.append(program_name)
+
+    def remove_program(self, program_name):
+        if program_name in self.programs:
+            self.programs.remove(program_name)
+        else:
+            logger.warning(f"Program {program_name} not found in the list.")
+
+    def get_programs(self):
+        return self.programs
+
+program_list = ProgramList()

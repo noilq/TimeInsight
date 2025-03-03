@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import (
-            QWidget, QVBoxLayout, QLabel, QScrollArea,  QLabel, QTableWidget, QTableWidgetItem, QHeaderView
+            QWidget, QVBoxLayout, QLabel, QScrollArea,  QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QCheckBox
 )
 from sqlalchemy.orm import Session
 from time_insight.data.database import engine
@@ -11,10 +11,12 @@ from time_insight.settings import get_setting
 from time_insight.logging.logger import logger
 
 class ApplicationsWidget(QWidget):
-    def __init__(self):
+    def __init__(self, chronological_widget, activity_widget):
         super().__init__()
         #self.setStyleSheet("background-color: none;")
-        
+        self.chronological_widget = chronological_widget
+        self.activity_widget = activity_widget
+
         self.layout = QVBoxLayout()
 
         #create scroll area widget
@@ -34,12 +36,16 @@ class ApplicationsWidget(QWidget):
         #load activities + apps and draw table
         self.load_applications(QDate.currentDate()) 
 
+        self.date = QDate.currentDate()
+
     def load_applications(self, target_date):
         """
         Load application activities from database and draw table.
 
         :param target_date: QDate object representing the target date.
         """
+        self.date = target_date
+
         try:
             #get activities 
             activities = self.get_activities_from_database(target_date)
@@ -85,8 +91,8 @@ class ApplicationsWidget(QWidget):
         #create table
         table = QTableWidget()
         table.setRowCount(len(sorted_app_time))
-        table.setColumnCount(3)
-        table.setHorizontalHeaderLabels(["Application Name", "Time Spent", "Percentage"])
+        table.setColumnCount(4)
+        table.setHorizontalHeaderLabels(["Select", "Application Name", "Time Spent", "Percentage"])
 
         #hide counter column
         table.verticalHeader().setVisible(False)
@@ -95,12 +101,17 @@ class ApplicationsWidget(QWidget):
         for row_idx, (app_id, time_spent) in enumerate(sorted_app_time):
             app = applications.get(app_id)
             if app:
+                checkbox = QCheckBox()
+                checkbox.setChecked(True)
+                checkbox.stateChanged.connect(self.on_checkbox_state_changed)
+                table.setCellWidget(row_idx, 0, checkbox)
+
                 #calculate percentage of time spent
                 percentage = (time_spent / total_time * 100) if total_time.total_seconds() > 0 else 0
                 #assign data to table
-                table.setItem(row_idx, 0, QTableWidgetItem(app.name))
-                table.setItem(row_idx, 1, QTableWidgetItem(str(time_spent)))
-                table.setItem(row_idx, 2, QTableWidgetItem(f"{percentage:.2f}%"))
+                table.setItem(row_idx, 1, QTableWidgetItem(app.name))
+                table.setItem(row_idx, 2, QTableWidgetItem(str(time_spent)))
+                table.setItem(row_idx, 3, QTableWidgetItem(f"{percentage:.2f}%"))
 
         #auto resize columns
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -147,3 +158,21 @@ class ApplicationsWidget(QWidget):
         self.layout.update()
         #load activities and draw table
         self.load_applications(target_date)
+
+    def on_checkbox_state_changed(self, state):
+        selected_apps = self.get_selected_applications()
+        print("Selected applications:", selected_apps)  
+
+        self.chronological_widget.draw_timeline_graph(self.date, selected_apps)
+        self.activity_widget.update_activities(self.date, selected_apps)
+
+    def get_selected_applications(self):
+        selected_apps = []
+        table = self.layout.itemAt(0).widget()
+        if isinstance(table, QTableWidget):
+            for row in range(table.rowCount()):
+                checkbox = table.cellWidget(row, 0)
+                if checkbox and checkbox.isChecked():
+                    app_name = table.item(row, 1).text()
+                    selected_apps.append(app_name)
+        return selected_apps
