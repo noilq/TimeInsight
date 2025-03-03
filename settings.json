@@ -7,5 +7,11 @@
     "language": "en",
     "autostart": true,
     "sosal": false,
-    "window_checking_interval": "1"
+    "window_checking_interval": "1",
+    "daily_report": true,
+    "last_daily_report": "1997.1.1",
+    "weekly_report": true,
+    "last_weekly_report": "1997.1.1",
+    "monthly_report": true,
+    "last_monthly_report": "1997.1.1"
 }

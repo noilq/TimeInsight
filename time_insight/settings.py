@@ -14,7 +14,13 @@ DEFAULT_SETTINGS = {
     "language": "en",
     "autostart": True,
     "sosal": False,
-    "window_checking_interval": "1"
+    "window_checking_interval": "1",
+    "daily_report" : False,
+    "last_daily_report" : "1997.1.1",
+    "weekly_report" : False,
+    "last_weekly_report" : "1997.1.1",
+    "monthly_report" : False,
+    "last_monthly_report" : "1997.1.1"
 }
 
 def load_settings():

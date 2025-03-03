@@ -26,7 +26,7 @@ class SettingsScreen(QWidget):
         self.sidebar = QVBoxLayout()
         self.sidebar.setSpacing(2)  #minimize space between buttons
         self.buttons = {}
-        sections = ["General", "UI", "Settings 3", "Settings 4", "About"]
+        sections = ["General", "UI", "Settings 3", "Reports", "About"]
         
         for section in sections:
             btn = QPushButton(section)
@@ -93,9 +93,17 @@ class SettingsScreen(QWidget):
             layout.addWidget(QLabel("Sosal"))
             layout.addWidget(QRadioButton("Da"))
             layout.addWidget(QRadioButton("Vtoroe da"))
-        elif section == "Settings 4":
-            layout.addWidget(QLabel("Enable coookies"))
-            layout.addWidget(QCheckBox("Enable malware"))
+        elif section == "Reports":
+            layout.addWidget(QLabel("Enable reports"))
+            self.daily_checkbox = QCheckBox("Daily")
+            self.daily_checkbox.setChecked(get_setting("daily_report"))
+            self.weekly_checkbox = QCheckBox("Weekly")
+            self.weekly_checkbox.setChecked(get_setting("weekly_report"))
+            self.monthly_checkbox = QCheckBox("Monthly")
+            self.monthly_checkbox.setChecked(get_setting("monthly_report"))
+            layout.addWidget(self.daily_checkbox)
+            layout.addWidget(self.weekly_checkbox)
+            layout.addWidget(self.monthly_checkbox)
         
         page.setLayout(layout)
         return page
@@ -130,3 +138,10 @@ class SettingsScreen(QWidget):
                 set_setting("theme_text_color", "#ffffff")
                 logger.info("Theme changed to Dark.")
                 self.update_signal.emit("theme")
+        elif self.curr_section == "Reports":
+            daily = self.daily_checkbox.isChecked()
+            weekly = self.weekly_checkbox.isChecked()
+            monthly = self.monthly_checkbox.isChecked()
+            set_setting("daily_report", daily)
+            set_setting("weekly_report", weekly)
+            set_setting("monthly_report", monthly)
