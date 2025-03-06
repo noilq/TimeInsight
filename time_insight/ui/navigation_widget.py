@@ -17,15 +17,18 @@ class NavigationWidget(QWidget):
 
         self.main_button = QPushButton("Main")
         self.stats_button = QPushButton("Stats")
+        self.reports_button = QPushButton("Reports")
         self.options_button = QPushButton("Settings")
 
         #emit signal with screen name
         self.main_button.clicked.connect(lambda: self.emit_signal("main"))
         self.stats_button.clicked.connect(lambda: self.emit_signal("stats"))
+        self.reports_button.clicked.connect(lambda: self.emit_signal("reports"))
         self.options_button.clicked.connect(lambda: self.emit_signal("settings"))
 
         layout.addWidget(self.main_button)
         layout.addWidget(self.stats_button)
+        layout.addWidget(self.reports_button)
         layout.addWidget(self.options_button)
 
         self.setLayout(layout)

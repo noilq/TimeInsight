@@ -10,6 +10,7 @@ from time_insight.ui.navigation_widget import NavigationWidget
 
 from time_insight.ui.Main.main_screen import MainScreen
 from time_insight.ui.Stats.stats_screen import StatsScreen
+from time_insight.ui.Reports.reports_screen import ReportsScreen
 from time_insight.ui.Settings.settings_screen import SettingsScreen
 
 from time_insight.settings import get_setting
@@ -74,12 +75,16 @@ class MainWindow(QMainWindow):
         # Stats Screen
         self.stats_screen = StatsScreen()
 
+        # Reports Screen
+        self.reports_screen = ReportsScreen()
+
         # Options Screen
         self.settings_screen = SettingsScreen()
 
         # Add screens to stacked widget
         self.stacked_widget.addWidget(self.main_screen)
         self.stacked_widget.addWidget(self.stats_screen)
+        self.stacked_widget.addWidget(self.reports_screen)
         self.stacked_widget.addWidget(self.settings_screen)
 
         main_layout.addWidget(self.stacked_widget)
@@ -93,6 +98,8 @@ class MainWindow(QMainWindow):
         elif screen_name == "stats":
             self.stacked_widget.setCurrentIndex(1)
         elif screen_name == "settings":
+            self.stacked_widget.setCurrentIndex(3)
+        elif screen_name == "reports":
             self.stacked_widget.setCurrentIndex(2)
 
     def on_ui_update(self, update_type):

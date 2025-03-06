@@ -1,13 +1,17 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
     QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel,
-    QStackedWidget, QSlider, QComboBox, QRadioButton, QCheckBox, QLineEdit, QSizePolicy
+    QStackedWidget, QSlider, QComboBox, QRadioButton, QCheckBox, QLineEdit, QSizePolicy, QFileDialog
 )
 from PyQt5.QtCore import Qt
 from time_insight.tracker.tracker import set_interval
 
 from time_insight.settings import get_setting, set_setting
 from time_insight.logging.logger import logger
+
+import shutil
+import os
+from time_insight.config import DB_PATH, DATA_DIR
 
 class SettingsScreen(QWidget):
     update_signal = pyqtSignal(str)
@@ -26,7 +30,7 @@ class SettingsScreen(QWidget):
         self.sidebar = QVBoxLayout()
         self.sidebar.setSpacing(2)  #minimize space between buttons
         self.buttons = {}
-        sections = ["General", "UI", "Settings 3", "Reports", "About"]
+        sections = ["General", "UI", "Data", "Reports", "About"]
         
         for section in sections:
             btn = QPushButton(section)
@@ -89,10 +93,13 @@ class SettingsScreen(QWidget):
             self.theme_combo_box.addItems(["Light", "Dark", "Custom"])    #custom not implemented yet
             self.theme_combo_box.setCurrentText(get_setting("theme"))
             layout.addWidget(self.theme_combo_box)
-        elif section == "Settings 3":
-            layout.addWidget(QLabel("Sosal"))
-            layout.addWidget(QRadioButton("Da"))
-            layout.addWidget(QRadioButton("Vtoroe da"))
+        elif section == "Data":
+            self.export_data_button = QPushButton("Export Database")
+            self.export_data_button.clicked.connect(self.export_data)
+            layout.addWidget(self.export_data_button)
+            self.import_data_button = QPushButton("Import Database")
+            self.import_data_button.clicked.connect(self.import_data)
+            layout.addWidget(self.import_data_button)
         elif section == "Reports":
             layout.addWidget(QLabel("Enable reports"))
             self.daily_checkbox = QCheckBox("Daily")
@@ -145,3 +152,18 @@ class SettingsScreen(QWidget):
             set_setting("daily_report", daily)
             set_setting("weekly_report", weekly)
             set_setting("monthly_report", monthly)
+
+    def export_data(self):
+        logger.info("Starting export...")
+        dest, _ = QFileDialog.getSaveFileName(self, "Save Database", "", "Database Files (*.db)")
+        if dest:
+            shutil.copy(DB_PATH, dest)
+            logger.info(f"Database exported to {dest}")
+
+    def import_data(self):
+        logger.info("Starting import...")
+        src, _ = QFileDialog.getOpenFileName(self, "Import Database", "", "Database Files (*.db)")
+        if src:
+            dest = os.path.join(DATA_DIR, 'time_insight.db')
+            shutil.copy(src, DB_PATH)
+            logger.info(f"Database imported from {src}")
