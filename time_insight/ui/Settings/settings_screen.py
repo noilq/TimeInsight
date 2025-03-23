@@ -6,6 +6,11 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from time_insight.tracker.tracker import set_interval
 
+from sqlalchemy.orm import Session
+from time_insight.data.database import engine
+from time_insight.data.models import ApplicationActivity, Application, UserSession, UserSessionType
+import pandas as pd
+
 from time_insight.settings import get_setting, set_setting
 from time_insight.logging.logger import logger
 
@@ -94,12 +99,18 @@ class SettingsScreen(QWidget):
             self.theme_combo_box.setCurrentText(get_setting("theme"))
             layout.addWidget(self.theme_combo_box)
         elif section == "Data":
-            self.export_data_button = QPushButton("Export Database")
-            self.export_data_button.clicked.connect(self.export_data)
-            layout.addWidget(self.export_data_button)
-            self.import_data_button = QPushButton("Import Database")
-            self.import_data_button.clicked.connect(self.import_data)
-            layout.addWidget(self.import_data_button)
+            self.export_programs_data_button = QPushButton("Export Programs Data")
+            self.export_programs_data_button.clicked.connect(self.export_programs_data)
+            layout.addWidget(self.export_programs_data_button)
+            self.export_sessions_data_button = QPushButton("Export Sessions Data")
+            self.export_sessions_data_button.clicked.connect(self.export_sessions_data)
+            layout.addWidget(self.export_sessions_data_button)
+            self.export_database_button = QPushButton("Export Database")
+            self.export_database_button.clicked.connect(self.export_database)
+            layout.addWidget(self.export_database_button)
+            self.import_database_button = QPushButton("Import Database")
+            self.import_database_button.clicked.connect(self.import_database)
+            layout.addWidget(self.import_database_button)
         elif section == "Reports":
             layout.addWidget(QLabel("Enable reports"))
             self.daily_checkbox = QCheckBox("Daily")
@@ -153,14 +164,54 @@ class SettingsScreen(QWidget):
             set_setting("weekly_report", weekly)
             set_setting("monthly_report", monthly)
 
-    def export_data(self):
+    def export_programs_data(self):
+        logger.info("Starting export...")
+        with Session(engine) as session:
+            activities = session.query(
+                ApplicationActivity.id.label("Activity ID"),
+                ApplicationActivity.application_id.label("Application ID"),
+                ApplicationActivity.window_name.label("Window Name"),
+                ApplicationActivity.additional_info.label("Additional Info"),
+                ApplicationActivity.session_start.label("Start Time"),
+                ApplicationActivity.session_end.label("End Time"),
+                ApplicationActivity.duration.label("Duration"),
+                Application.name.label("Program Name"),
+                Application.desc.label("Program Description"),
+                Application.enrollment_date.label("Enrollment Date"),
+                Application.path.label("Program Path")
+            ).join(
+                Application, Application.id == ApplicationActivity.application_id
+            ).all()
+
+        df = pd.DataFrame(activities)
+
+        dest, _ = QFileDialog.getSaveFileName(self, "Save Programs Data", "", "CSV Files (*.csv)")
+        if dest:
+            df.to_csv(dest, index=False, encoding="utf-8")
+            logger.info(f"Programs data exported to {dest}")
+
+    def export_sessions_data(self):
+        logger.info("Starting export...")
+        with Session(engine) as session:
+            user_sessions = session.query(UserSession, UserSessionType.name).join(
+                UserSessionType, UserSession.user_session_type_id == UserSessionType.id
+            ).all()
+
+        df = pd.DataFrame(user_sessions)
+
+        dest, _ = QFileDialog.getSaveFileName(self, "Save Sessions Data", "", "CSV Files (*.csv)")
+        if dest:
+            df.to_csv(dest, index=False, encoding="utf-8")
+            logger.info(f"Sessions data exported to {dest}")
+
+    def export_database(self):
         logger.info("Starting export...")
         dest, _ = QFileDialog.getSaveFileName(self, "Save Database", "", "Database Files (*.db)")
         if dest:
             shutil.copy(DB_PATH, dest)
             logger.info(f"Database exported to {dest}")
 
-    def import_data(self):
+    def import_database(self):
         logger.info("Starting import...")
         src, _ = QFileDialog.getOpenFileName(self, "Import Database", "", "Database Files (*.db)")
         if src:
