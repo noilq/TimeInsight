@@ -39,7 +39,10 @@ class BottomWidget(QFrame):
     def draw_chart(self, data):
         """Draw chart with data."""
         #create plotly chart
-        fig = px.bar(data.reset_index(), x='Start Time', y='Duration')
+        if (get_setting("graphs") == "Bar"):
+            fig = px.bar(data.reset_index(), x='Start Time', y='Duration')
+        elif (get_setting("graphs") == "Line"):
+            fig = px.line(data.reset_index(), x='Start Time', y='Duration')
         fig.update_layout(
             xaxis_title="Date", 
             yaxis_title="Duration (hours)",
@@ -59,16 +62,25 @@ class BottomWidget(QFrame):
     def draw_programs_chart(self, data):
         """Draw chart with data."""
         #create plotly chart
-        fig = px.bar(
-            data.reset_index(), 
-            x="Program Name", 
-            y="Duration in hours", 
-            color="Color",
-            color_discrete_map="identity",
-            hover_data={"Program Name": True, "Total Hours": True, "Color": False}
-            #log_y=True
-        )
-
+        if (get_setting("graphs") == "Bar"):
+            fig = px.bar(
+                data.reset_index(), 
+                x="Program Name", 
+                y="Duration in hours", 
+                color="Color",
+                color_discrete_map="identity",
+                hover_data={"Program Name": True, "Total Hours": True, "Color": False}
+                #log_y=True
+            )
+        elif (get_setting("graphs") == "Line"):
+            fig = px.line(
+                data.reset_index(), 
+                x="Program Name", 
+                y="Duration in hours", 
+                hover_data={"Program Name": True, "Total Hours": True}
+                #log_y=True
+            )
+        
         fig.update_layout(
             xaxis_title="Date", 
             yaxis_title="Duration (hours)",

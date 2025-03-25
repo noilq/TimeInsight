@@ -98,6 +98,11 @@ class SettingsScreen(QWidget):
             self.theme_combo_box.addItems(["Light", "Dark", "Custom"])    #custom not implemented yet
             self.theme_combo_box.setCurrentText(get_setting("theme"))
             layout.addWidget(self.theme_combo_box)
+            layout.addWidget(QLabel("Graphs"))
+            self.graphs_type_combo_box = QComboBox()
+            self.graphs_type_combo_box.addItems(["Bar", "Line"])    #custom not implemented yet
+            self.graphs_type_combo_box.setCurrentText(get_setting("graphs"))
+            layout.addWidget(self.graphs_type_combo_box)
         elif section == "Data":
             self.export_programs_data_button = QPushButton("Export Programs Data")
             self.export_programs_data_button.clicked.connect(self.export_programs_data)
@@ -156,6 +161,9 @@ class SettingsScreen(QWidget):
                 set_setting("theme_text_color", "#ffffff")
                 logger.info("Theme changed to Dark.")
                 self.update_signal.emit("theme")
+
+            selected_theme = self.graphs_type_combo_box.currentText()
+            set_setting("graphs", selected_theme)
         elif self.curr_section == "Reports":
             daily = self.daily_checkbox.isChecked()
             weekly = self.weekly_checkbox.isChecked()

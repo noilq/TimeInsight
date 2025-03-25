@@ -20,7 +20,8 @@ DEFAULT_SETTINGS = {
     "weekly_report" : False,
     "last_weekly_report" : "1997.1.1",
     "monthly_report" : False,
-    "last_monthly_report" : "1997.1.1"
+    "last_monthly_report" : "1997.1.1",
+    "graphs": "Bar"
 }
 
 def load_settings():
