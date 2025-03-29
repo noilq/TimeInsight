@@ -1,6 +1,6 @@
-import plotly.express as px
+import plotly.express as px     #type: ignore
 
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineView     #type: ignore
 
 from PyQt5.QtWidgets import (
             QVBoxLayout, QFrame, QTableWidget, QTableWidgetItem, QHeaderView, QStackedWidget

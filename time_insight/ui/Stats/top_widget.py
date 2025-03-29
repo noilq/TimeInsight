@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
 )
 from time_insight.ui.Stats.bottom_widget import BottomWidget
 import random
-import pandas as pd
+import pandas as pd             #type: ignore
 
 from time_insight.data.get_data import get_activity_data, get_computer_usage_data, get_programs_data
 from time_insight.time_converter import datetime_from_utc_to_local
@@ -115,7 +115,8 @@ class TopWidget(QWidget):
             case _:
                 logger.warning("Unknown dropdown selected.")
 
-        
+        print(start_date)
+        print(end_date)
 
         match stats_type:
             case "Programs": 
