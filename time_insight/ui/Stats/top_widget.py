@@ -115,9 +115,6 @@ class TopWidget(QWidget):
             case _:
                 logger.warning("Unknown dropdown selected.")
 
-        print(start_date)
-        print(end_date)
-
         match stats_type:
             case "Programs": 
                 data = get_programs_data(start_date, end_date, 50)
