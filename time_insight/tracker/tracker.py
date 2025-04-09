@@ -20,6 +20,8 @@ kernel32 = ctypes.windll.kernel32   #get access to processes & other system info
 
 interval = int(get_setting("window_checking_interval"))
 
+stop_event = threading.Event()      #stop tracker global event
+
 def get_active_window_info():
     """
     Retrieves the information about the currently active window.
@@ -99,7 +101,7 @@ def record_active_window(engine, event_type="Active"):
     """
     with Session(engine) as session:    #open session to work with db
         try:
-            while True:                 
+            while not stop_event.is_set():                 
                 title, process_name, process_path, processID = get_active_window_info()  #get active window info
                 if title and process_name and process_path:     #check for the data
                     current_time = datetime.now(timezone.utc)   #curr time in utc
@@ -155,6 +157,8 @@ def init_tracker():
 
     :return: None
     """
+    stop_event.clear()
+
     on_start()                  #action on start
     atexit.register(on_end)     #register action on end
     
@@ -162,6 +166,23 @@ def init_tracker():
     threading.Thread(target=record_active_window, args=(engine,), daemon=True, name="ActiveWindowRecorder").start()
 
     schedule_half_hour_tasks()  #schedule half an hour tasks
+
+def stop_tracker():
+    stop_event.set()
+    logger.info("Tracker stop signal sent.")
+
+def stop_tracker_for_minutes(minutes):
+    stop_tracker()
+
+    def restart():
+        time.sleep(minutes * 60)
+        init_tracker()
+        logger.info(f"Tracker restarted after {minutes} minutes.")
+
+    on_end()
+    threading.Thread(target=restart, daemon=True).start()
+    logger.info(f"Tracker stopped for {minutes} minutes.")
+
 
 if __name__ == '__main__':
     init_tracker()

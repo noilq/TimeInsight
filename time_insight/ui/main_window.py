@@ -1,8 +1,10 @@
 import sys
 import os
-from PyQt5.QtCore import Qt
+import time
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (
-            QApplication, QWidget, QDesktopWidget, QMainWindow, QVBoxLayout, QSystemTrayIcon, QMenu, QStackedWidget
+            QApplication, QWidget, QDesktopWidget, QMainWindow, QVBoxLayout, QSystemTrayIcon, QMenu, QStackedWidget, 
+            QPushButton, QAction, QLabel
 )
 from PyQt5.QtGui import QIcon, QPalette, QColor
 
@@ -13,8 +15,12 @@ from time_insight.ui.Stats.stats_screen import StatsScreen
 from time_insight.ui.Reports.reports_screen import ReportsScreen
 from time_insight.ui.Settings.settings_screen import SettingsScreen
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from time_insight.settings import get_setting
 from time_insight.logging.logger import logger
+
+from time_insight.tracker.tracker import stop_tracker_for_minutes
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -90,6 +96,60 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.stacked_widget)
 
         central_widget.setLayout(main_layout)
+
+        
+        #turn off/on tray tracking button
+        self.tracker_button = QPushButton(self)
+        self.tracker_button.setToolTip("Tracker is currently running.")
+        self.tracker_button.setFixedSize(20, 20)
+        self.tracker_button.setStyleSheet("border-radius: 10px; background-color: #5CFF5C; color: white;")##ff4444
+        self.tracker_button.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.update_tracker_button_position()
+        self.tracker_button.clicked.connect(self.on_tracker_button_click)
+        self.tracker_button.show()
+
+    def resizeEvent(self, event):
+        self.update_tracker_button_position()
+        super().resizeEvent(event)
+
+    def update_tracker_button_position(self):
+        margin = 10
+        x = self.width() - self.tracker_button.width() - margin
+        y = self.height() - self.tracker_button.height() - margin - self.menuBar().height()
+        self.tracker_button.move(x, y)
+
+    def on_tracker_button_click(self):
+        context_menu = QMenu(self)
+        
+        fakeaction = QAction("Turn off tracker for", self)
+        action1 = QAction("30 minutes", self)
+        action2 = QAction("1 hour", self)
+        action3 = QAction("4 hours", self)
+        action4 = QAction("Until next app start", self)
+
+        action1.triggered.connect(lambda: self.turn_off_tracker(0.1))
+        action2.triggered.connect(lambda: self.turn_off_tracker(60))
+        action3.triggered.connect(lambda: self.turn_off_tracker(240))
+        action4.triggered.connect(lambda: self.turn_off_tracker(2147483647))
+        
+        context_menu.addAction(fakeaction)
+        context_menu.addAction(action1)
+        context_menu.addAction(action2)
+        context_menu.addAction(action3)
+        context_menu.addAction(action4)
+        
+        context_menu.exec_(self.tracker_button.mapToGlobal(self.tracker_button.rect().topLeft()))
+
+    def turn_off_tracker(self, minutes):
+        self.tracker_button.setStyleSheet("border-radius: 10px; background-color: #ff4444; color: white;")
+        self.tracker_button.setToolTip("Tracker is currently stopped.")
+        stop_tracker_for_minutes(minutes)
+
+        QTimer.singleShot(int(minutes * 60 * 1000), self.on_tracker_running)
+    
+    def on_tracker_running(self):
+        self.tracker_button.setStyleSheet("border-radius: 10px; background-color: #5CFF5C; color: white;")
+        self.tracker_button.setToolTip("Tracker is currently running.")
 
     def on_navigation(self, screen_name):
         #navigate to screen
