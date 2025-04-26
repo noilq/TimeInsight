@@ -35,13 +35,21 @@ class MainScreen(QWidget):
 
         #create timeline widget
         self.timeline_widget = ChronologicalGraphWidget()
-        layout.addWidget(self.timeline_widget)
+        #layout.addWidget(self.timeline_widget)
+        
+        #create lower splitter
+        lower_splitter = self.create_splitter()
 
-        #create splitter
-        splitter = self.create_splitter()
+        #create main splitter
+        main_splitter = QSplitter(Qt.Vertical)
+        main_splitter.addWidget(self.timeline_widget)
+        main_splitter.addWidget(lower_splitter)
+
+        #main_splitter.setStretchFactor(0, 2)
+        #main_splitter.setStretchFactor(1, 3)
         
         #add splitter to layout
-        layout.addWidget(splitter)
+        layout.addWidget(main_splitter)
 
         #set stretch
         layout.setStretch(0, 1) #header
@@ -59,8 +67,10 @@ class MainScreen(QWidget):
         header_layout = QHBoxLayout(header_widget)
 
         self.header_left = HeaderWidget()   #date selection widget
-        self.header_center = QLabel("Header cent")
-        self.header_right = QLabel("Header right")
+        #self.header_center = QLabel("Header cent")
+        self.header_center = QLabel("")
+        #self.header_right = QLabel("Header right")
+        self.header_right = QLabel("")
 
         header_layout.addWidget(self.header_left, 1)
         header_layout.addWidget(self.header_center, 2)

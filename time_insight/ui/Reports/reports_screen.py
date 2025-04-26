@@ -306,7 +306,7 @@ class ReportsScreen(QWidget):
                 data,
                 x="Day of Week",
                 y="Active Hours" if position == "top" else "Average Active Hours",
-                title="Active Hours" if position == "top" else "Average Active Hours by Day of Week",
+                title="Active Hours per day" if position == "top" else "Average Active Hours by Day of Week",
                 labels={"Day of Week": "Day", "Active Hours": "Hours", "Average Active Hours": "Hours"},
                 hover_data=["Active Hours" if position == "top" else "Average Active Hours"]
             )
@@ -324,9 +324,16 @@ class ReportsScreen(QWidget):
             plot_bgcolor=get_setting("theme_secondary_color"),
             paper_bgcolor=get_setting("theme_main_color"),
             font=dict(color=get_setting("theme_text_color")),
+            margin=dict(l=40, r=40, t=40, b=40),    #make graph bigger
         )
 
         html = fig.to_html(include_plotlyjs='cdn')
+
+        #fill the gaps it html 
+        html = html.replace(
+            "<head>",
+            f"<head><style>body {{ background-color: {get_setting("theme_main_color")}; margin: 0; padding: 0; }}</style>"
+        )
 
         if position == "top":
             self.web_view_left.setHtml(html)
@@ -339,7 +346,7 @@ class ReportsScreen(QWidget):
                 data,
                 x="Day of Month",
                 y="Active Hours",
-                title="Active Hours by Hour" if position == "top" else "Average Active Hours by Day of Month",
+                title="Active Hours per day" if position == "top" else "Average Active Hours by Day of Month",
                 labels={"Hour": "Hour of Day", "Active Hours": "Active Hours", "Day of Month": "Day", "Average Active Hours": "Average Active Hours"},
                 hover_data=["Active Hours"]
             )
@@ -348,7 +355,7 @@ class ReportsScreen(QWidget):
                 data,
                 x="Day of Month",
                 y="Active Hours",
-                title="Active Hours by Hour" if position == "top" else "Average Active Hours by Day of Month",
+                title="Active Hours per day" if position == "top" else "Average Active Hours by Day of Month",
                 labels={"Hour": "Hour of Day", "Active Hours": "Active Hours", "Day of Month": "Day", "Average Active Hours": "Average Active Hours"},
                 hover_data=["Active Hours"]
             )
@@ -357,10 +364,17 @@ class ReportsScreen(QWidget):
             plot_bgcolor=get_setting("theme_secondary_color"),
             paper_bgcolor=get_setting("theme_main_color"),
             font=dict(color=get_setting("theme_text_color")),
+            margin=dict(l=40, r=40, t=40, b=40),    #make graph bigger
         )
 
 
         html = fig.to_html(include_plotlyjs='cdn')
+
+        #fill the gaps it html 
+        html = html.replace(
+            "<head>",
+            f"<head><style>body {{ background-color: {get_setting("theme_main_color")}; margin: 0; padding: 0; }}</style>"
+        )
 
         if position == "top":
             self.web_view_left.setHtml(html)

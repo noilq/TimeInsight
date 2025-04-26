@@ -48,11 +48,19 @@ class BottomWidget(QFrame):
             yaxis_title="Duration (hours)",
             plot_bgcolor=get_setting("theme_secondary_color"),
             paper_bgcolor=get_setting("theme_main_color"),
-            font=dict(color=get_setting("theme_text_color"))
+            font=dict(color=get_setting("theme_text_color")),
+            margin=dict(l=40, r=40, t=40, b=40)    #make graph bigger
         )
         
         #convert plotly chart to html
         html = fig.to_html(include_plotlyjs='cdn')
+
+        #fill the gaps it html 
+        html = html.replace(
+            "<head>",
+            f"<head><style>body {{ background-color: {get_setting("theme_main_color")}; margin: 0; padding: 0; }}</style>"
+        )
+
         #display html in web view
         self.web_view.setHtml(html)
 
@@ -87,11 +95,19 @@ class BottomWidget(QFrame):
             plot_bgcolor=get_setting("theme_secondary_color"),
             paper_bgcolor=get_setting("theme_main_color"),
             font=dict(color=get_setting("theme_text_color")),
-            xaxis=dict(autorange="reversed")
+            xaxis=dict(autorange="reversed"),
+            margin=dict(l=40, r=40, t=40, b=40)    #make graph bigger
         )
         
         #convert plotly chart to html
         html = fig.to_html(include_plotlyjs='cdn')
+
+        #fill the gaps it html 
+        html = html.replace(
+            "<head>",
+            f"<head><style>body {{ background-color: {get_setting("theme_main_color")}; margin: 0; padding: 0; }}</style>"
+        )
+
         #display html in web view
         self.web_view.setHtml(html)
 

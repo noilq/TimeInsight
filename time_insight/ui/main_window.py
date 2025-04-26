@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         else:
             #not builded app
             self.icon_path = os.path.join(os.path.dirname(__file__), 'icon.png')
-
+        
         self.setWindowIcon(QIcon(self.icon_path))
         
         self.init_tray()
@@ -218,6 +218,196 @@ class MainWindow(QMainWindow):
         third_color = get_setting("theme_third_color")
         text_color = get_setting("theme_text_color")
         self.color_theme = f"""
+            QWidget {{
+                background-color: {main_color};
+                color: {text_color};
+                font-family: 'Segoe UI', 'Roboto', sans-serif;
+                font-size: 14px;
+                border: none;
+            }}
+            
+            QPushButton {{
+                background-color: {secondary_color};
+                color: {text_color};
+                border: none;
+                border-radius: 8px;
+                padding: 8px 12px;
+            }}
+            QPushButton:hover {{
+                background-color: {third_color};
+            }}
+            
+            QLineEdit, QDateEdit {{
+                background-color: {main_color};
+                color: {text_color};
+                border: 1px solid {third_color};
+                border-radius: 6px;
+                padding: 6px 8px;
+            }}
+            
+            QComboBox {{
+                background-color: {main_color};
+                color: {text_color};
+                border: 1px solid {third_color};
+                border-radius: 6px;
+                padding: 6px 8px;
+            }}
+            QComboBox::drop-down {{
+                border: none;
+            }}
+            QComboBox QAbstractItemView {{
+                background-color: {main_color};
+                selection-background-color: {third_color};
+                border: 1px solid {third_color};
+                border-radius: 6px;
+            }}
+            
+            QCheckBox {{
+                spacing: 6px;
+            }}
+            QCheckBox::indicator {{
+                width: 18px;
+                height: 18px;
+                border-radius: 4px;
+                border: 1px solid {third_color};
+                background-color: {main_color};
+            }}
+            QCheckBox::indicator:checked {{
+                border: 1px solid {third_color};
+                background-color: {main_color};
+            }}
+
+            QLabel {{
+                color: {text_color};
+            }}
+
+            QTableWidget {{
+                background-color: {main_color};
+                border: none;
+                gridline-color: {third_color};
+                selection-background-color: {third_color};
+                selection-color: {text_color};
+            }}
+            QHeaderView::section {{
+                background-color: {secondary_color};
+                color: {text_color};
+                padding: 6px;
+                border: none;
+                border-bottom: 1px solid {third_color};
+            }}
+            QTableWidget::item {{
+                padding: 6px;
+            }}
+
+            QCalendarWidget {{
+                background-color: {main_color};
+                border: none;
+            }}
+            QCalendarWidget QToolButton {{
+                background-color: transparent;
+                color: {text_color};
+                padding: 6px;
+            }}
+            QCalendarWidget QToolButton:hover {{
+                background-color: {third_color};
+                border-radius: 5px;
+            }}
+            QCalendarWidget QAbstractItemView {{
+                background-color: {main_color};
+                selection-background-color: {third_color};
+            }}
+
+
+            QScrollBar:vertical {{
+                background: {main_color};
+                width: 12px;
+                margin: 2px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background: {third_color};
+                min-height: 20px;
+                border-radius: 4px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+                height: 0px;
+            }}
+            QScrollBar:horizontal {{
+                background: {main_color};
+                height: 12px;
+                margin: 2px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background: {third_color};
+                min-width: 20px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal:hover {{
+                background: {secondary_color};
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
+                width: 0px;
+            }}
+
+
+
+            QDateEdit {{
+                background-color: {main_color};
+                color: {text_color};
+                border: 1px solid {third_color};
+                border-radius: 6px;
+                padding: 6px 8px;
+            }}
+            QDateEdit::drop-down {{
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 24px;
+                border-left: 1px solid {third_color};
+                background-color: {secondary_color};
+                border-top-right-radius: 6px;
+                border-bottom-right-radius: 6px;
+            }}
+
+            QCalendarWidget {{
+                background-color: {main_color};
+                border: 1px solid {third_color};
+                border-radius: 6px;
+            }}
+            QCalendarWidget QToolButton {{
+                background-color: transparent;
+                color: {text_color};
+                font-weight: bold;
+                padding: 6px;
+            }}
+            QCalendarWidget QToolButton:hover {{
+                background-color: {third_color};
+                border-radius: 5px;
+            }}
+            QCalendarWidget QMenu {{
+                background-color: {main_color};
+                border: 1px solid {third_color};
+            }}
+            QCalendarWidget QAbstractItemView {{
+                background-color: {main_color};
+                selection-background-color: {third_color};
+                selection-color: {text_color};
+                border-radius: 4px;
+            }}
+
+            QSplitter {{
+                background-color: transparent;
+            }}
+            QSplitter::handle {{
+                background-color: {third_color};
+                border-radius: 4px;
+            }}
+            QSplitter::handle:hover {{
+                background-color: {secondary_color};
+            }}
+        """
+        """
+        self.color_theme = f
             QWidget {{
                 background-color: {main_color};
                 color: {text_color};

@@ -161,6 +161,7 @@ class SettingsScreen(QWidget):
                 set_setting("theme_text_color", "#ffffff")
                 logger.info("Theme changed to Dark.")
                 self.update_signal.emit("theme")
+            #elif selected_theme == "Custom":
 
             selected_theme = self.graphs_type_combo_box.currentText()
             set_setting("graphs", selected_theme)

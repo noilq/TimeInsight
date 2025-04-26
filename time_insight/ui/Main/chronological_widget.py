@@ -99,12 +99,20 @@ class ChronologicalGraphWidget(QGraphicsView):
             showlegend=False,
             plot_bgcolor=get_setting("theme_secondary_color"),
             paper_bgcolor=get_setting("theme_main_color"),
-            font=dict(color=get_setting("theme_text_color"))
+            font=dict(color=get_setting("theme_text_color")),
+            margin=dict(l=40, r=40, t=40, b=40),    #make graph bigger
         )
         fig.update_yaxes(autorange="reversed")
         fig.update_yaxes(title_text="") #hide "Category" title
 
         html = fig.to_html(include_plotlyjs='cdn')
+
+        #fill the gaps it html 
+        html = html.replace(
+            "<head>",
+            f"<head><style>body {{ background-color: {get_setting("theme_main_color")}; margin: 0; padding: 0; }}</style>"
+        )
+
         self.web_view.setHtml(html)
 
     def get_color(self, enrollment_date):
