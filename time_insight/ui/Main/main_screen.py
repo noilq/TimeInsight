@@ -10,6 +10,9 @@ from time_insight.ui.Main.chronological_widget import ChronologicalGraphWidget
 
 from time_insight.logging.logger import logger
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
+
 class MainScreen(QWidget):
     def __init__(self):
         super().__init__()
@@ -20,6 +23,11 @@ class MainScreen(QWidget):
         self.update_timer.setInterval(100000)    #100 every seconds
         self.update_timer.timeout.connect(self.update_widgets)
         self.update_timer.start()
+
+    def retranslate_ui(self):
+        self.header_left.retranslate_ui()
+        self.activities_widget.retranslate_ui()
+        self.applications_widget.retranslate_ui()
 
     def init_ui(self):
         """

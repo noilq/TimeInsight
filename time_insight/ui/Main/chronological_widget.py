@@ -14,6 +14,9 @@ from time_insight.logging.logger import logger
 
 import random
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
+
 class ChronologicalGraphWidget(QGraphicsView):
     def __init__(self):
         super().__init__()
@@ -55,10 +58,10 @@ class ChronologicalGraphWidget(QGraphicsView):
         df_activities["Category"] = "Activities"
 
         df_activities["Tooltip"] = (
-            "Program Name: " + df_activities["Name"] + "<br>" +
-            "Window Name: " + df_activities["Window Name"] + "<br>" +
-            "Time interval: " + df_activities["Start Time"].dt.strftime("%H:%M:%S") + " - " + df_activities["End Time"].dt.strftime("%H:%M:%S") + "<br>" +
-            "Duration: " + df_activities["Duration"].astype(str)
+            t("program_name") + ": " + df_activities["Name"] + "<br>" +
+            t("window_name") + ": " + df_activities["Window Name"] + "<br>" +
+            t("time_interval") + ": " + df_activities["Start Time"].dt.strftime("%H:%M:%S") + " - " + df_activities["End Time"].dt.strftime("%H:%M:%S") + "<br>" +
+            t("duration") + ": " + df_activities["Duration"].astype(str)
         )
 
         #user sessions
@@ -77,9 +80,9 @@ class ChronologicalGraphWidget(QGraphicsView):
         df_user_sessions["Category"] = "User Sessions"
 
         df_user_sessions["Tooltip"] = (
-            df_user_sessions["Session type name"] + " session" + "<br>" +
-            "Time interval: " + df_user_sessions["Start Time"].dt.strftime("%H:%M:%S") + " - " + df_user_sessions["End Time"].dt.strftime("%H:%M:%S") + "<br>" +
-            "Duration: " + df_user_sessions["Duration"].astype(str)
+            df_user_sessions["Session type name"] + " " + t("session") + "<br>" +
+            t("time_interval") + ": " + df_user_sessions["Start Time"].dt.strftime("%H:%M:%S") + " - " + df_user_sessions["End Time"].dt.strftime("%H:%M:%S") + "<br>" +
+            t("duration") + ": " + df_user_sessions["Duration"].astype(str)
         )
         
         #combine both dataframes

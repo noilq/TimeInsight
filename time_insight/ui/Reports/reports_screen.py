@@ -17,10 +17,16 @@ from time_insight.logging.logger import logger
 from datetime import datetime, timedelta
 from collections import defaultdict
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
+
 class ReportsScreen(QWidget):
     def __init__(self):
         super().__init__()
         self.init_ui()
+
+    def retranslate_ui(self):
+        print()
 
     def init_ui(self):
         logger.info("Initializing reports screen UI.")

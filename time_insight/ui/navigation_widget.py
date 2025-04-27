@@ -5,6 +5,9 @@ from PyQt5.QtWidgets import (
 
 from time_insight.logging.logger import logger
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
+
 class NavigationWidget(QWidget):
     navigation_signal = pyqtSignal(str)
 
@@ -32,6 +35,12 @@ class NavigationWidget(QWidget):
         layout.addWidget(self.options_button)
 
         self.setLayout(layout)
+
+    def retranslate_ui(self):
+        self.main_button.setText(t("main"))
+        self.stats_button.setText(t("stats"))
+        self.reports_button.setText(t("reports"))
+        self.options_button.setText(t("settings"))
 
     def emit_signal(self, screen_name):
         self.navigation_signal.emit(screen_name)

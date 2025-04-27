@@ -10,6 +10,9 @@ from time_insight.data.models import ApplicationActivity, Application
 from time_insight.settings import get_setting
 from time_insight.logging.logger import logger
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
+
 class ApplicationsWidget(QWidget):
     def __init__(self, chronological_widget, activity_widget):
         super().__init__()
@@ -37,6 +40,22 @@ class ApplicationsWidget(QWidget):
         self.load_applications(QDate.currentDate()) 
 
         self.date = QDate.currentDate()
+
+    def retranslate_ui(self):
+        for i in range(self.layout.count()):
+            widget = self.layout.itemAt(i).widget()
+            if isinstance(widget, QTableWidget):
+                widget.setHorizontalHeaderLabels([
+                    t("select"),
+                    t("application_name"),
+                    t("time_spent"),
+                    t("percentage")
+                ])
+            elif isinstance(widget, QLabel):
+                if "No application activities found." in widget.text():
+                    widget.setText(t("no_applications_message"))
+                elif "Error loading data:" in widget.text():
+                    pass
 
     def load_applications(self, target_date):
         """

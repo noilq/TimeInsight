@@ -11,6 +11,8 @@ from time_insight.time_converter import datetime_from_utc_to_local
 
 from time_insight.logging.logger import logger
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
 
 class TopWidget(QWidget):
     def __init__(self, bottom_widget):
@@ -18,6 +20,9 @@ class TopWidget(QWidget):
 
         self.bottom_widget = bottom_widget
         self.init_ui()
+
+    def retranslate_ui(self):
+        print()
 
     def init_ui(self):
         top_layout = QHBoxLayout()

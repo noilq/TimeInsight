@@ -10,6 +10,9 @@ from time_insight.data.models import ApplicationActivity, Application
 from time_insight.time_converter import datetime_from_utc_to_local
 from time_insight.logging.logger import logger
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
+
 class ActivitiesWidget(QWidget):
     def __init__(self):
         super().__init__()
@@ -33,6 +36,23 @@ class ActivitiesWidget(QWidget):
 
         #load activities and draw table
         self.load_application_activities(QDate.currentDate())
+
+    def retranslate_ui(self):
+        for i in range(self.layout.count()):
+            widget = self.layout.itemAt(i).widget()
+            if isinstance(widget, QTableWidget):
+                widget.setHorizontalHeaderLabels([
+                    t("window_name"),
+                    t("additional_info"),
+                    t("start_time"),
+                    t("end_time"),
+                    t("duration")
+                ])
+            elif isinstance(widget, QLabel):
+                if "No application activities found." in widget.text():
+                    widget.setText(t("no_activities_message"))
+                elif "Error loading data:" in widget.text():
+                    pass
 
     def load_application_activities(self, target_date, program_filter=None):
         """

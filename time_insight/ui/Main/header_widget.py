@@ -5,6 +5,9 @@ from PyQt5.QtWidgets import (
 
 from time_insight.logging.logger import logger
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
+
 class HeaderWidget(QWidget):
     date_changed_signal = pyqtSignal(QDate)
 
@@ -58,6 +61,9 @@ class HeaderWidget(QWidget):
         self.calendar.selectionChanged.connect(lambda: self.date_changed(self.calendar.selectedDate()))
 
         self.setLayout(main_layout)
+
+    def retranslate_ui(self):
+        self.today_button.setText(t("today_button_text"))
 
     def update_date_label(self):
         """

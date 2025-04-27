@@ -22,6 +22,9 @@ from time_insight.logging.logger import logger
 
 from time_insight.tracker.tracker import stop_tracker_for_minutes
 
+from time_insight.ui.language_manager import language_manager 
+from time_insight.translations import t
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -43,6 +46,26 @@ class MainWindow(QMainWindow):
         self.init_styles()
         self.init_ui()
         self.connect_signals()
+
+        language_manager.language_changed.connect(self.retranslate_ui)
+        self.retranslate_ui()
+
+    def retranslate_ui(self):
+        self.tray_menu.clear()
+        open_action = self.tray_menu.addAction(t("open"))
+        open_action.triggered.connect(self.show)
+        quit_action = self.tray_menu.addAction(t("exit"))
+        quit_action.triggered.connect(self.close_app)
+
+        if self.tracker_button.styleSheet().find("#ff4444") != -1:
+            self.tracker_button.setToolTip(t("tracker_stopped"))
+        else:
+            self.tracker_button.setToolTip(t("tracker_running"))
+
+        self.navigation_widget.retranslate_ui()
+        self.main_screen.retranslate_ui()
+        #self.stats_screen.retranslate_ui()
+        self.reports_screen.retranslate_ui()
 
     def init_tray(self):
         try:

@@ -11,7 +11,7 @@ DEFAULT_SETTINGS = {
     "theme_secondary_color": "#f0f0f0",
     "theme_third_color": "#cccccc",
     "theme_text_color": "#000000",
-    "language": "en",
+    "language": "English",
     "autostart": True,
     "sosal": False,
     "window_checking_interval": "1",
