@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
         self.tracker_button = QPushButton(self)
         self.tracker_button.setToolTip("Tracker is currently running.")
         self.tracker_button.setFixedSize(20, 20)
-        self.tracker_button.setStyleSheet("border-radius: 10px; background-color: #5CFF5C; color: white;")##ff4444
+        self.tracker_button.setStyleSheet("border-radius: 10px; background-color: #5CFF5C; color: black;")##ff4444
         self.tracker_button.setWindowFlags(Qt.WindowStaysOnTopHint)
         self.update_tracker_button_position()
         self.tracker_button.clicked.connect(self.on_tracker_button_click)
@@ -171,7 +171,7 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(int(minutes * 60 * 1000), self.on_tracker_running)
     
     def on_tracker_running(self):
-        self.tracker_button.setStyleSheet("border-radius: 10px; background-color: #5CFF5C; color: white;")
+        self.tracker_button.setStyleSheet("border-radius: 10px; background-color: #5CFF5C; color: black;")
         self.tracker_button.setToolTip("Tracker is currently running.")
 
     def on_navigation(self, screen_name):

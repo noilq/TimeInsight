@@ -36,7 +36,8 @@ class ReportsScreen(QWidget):
         top_layout = QHBoxLayout()
         
         self.report_type_combo_box = QComboBox()
-        self.report_type_combo_box.addItems(["Daily", "Weekly", "Monthly"])
+        #self.report_type_combo_box.addItems(["Daily", "Weekly", "Monthly"])
+        self.report_type_combo_box.addItems(["Weekly", "Monthly"])
         self.report_type_combo_box.currentIndexChanged.connect(lambda: self.handle_dropdown_change(1))
         top_layout.addWidget(self.report_type_combo_box)
 
@@ -73,6 +74,8 @@ class ReportsScreen(QWidget):
         self.layout.addWidget(self.splitter)
 
         self.setLayout(self.layout)
+
+        self.handle_dropdown_change(1)
 
     def handle_dropdown_change(self, value=1):
         #get selected values
@@ -157,16 +160,16 @@ class ReportsScreen(QWidget):
 
                 diff = round(curr_week_hours - avg_week_hours, 1)
                 if value == 0:
-                    period = "this week"
+                    period = t("this_week")
                 elif value == 1:
-                    period = "previous week"
+                    period = t("previous_week")
 
                 if diff > 0:
-                    msg = f"You have spent {period} {diff} h. more than average."
+                    msg = f"{t("you_have_spent")} {period} {diff} {t("h_more_than_average")}"
                 elif diff < 0:
-                    msg = f"You have spent {period} {abs(diff)} h. less than average."
+                    msg = f"{t("you_have_spent")} {period} {abs(diff)} {t("h_less_than_average")}"
                 else:
-                    msg = f"You have spent the same amount of time as usual this {period}."
+                    msg = f"{t("you_have_spent")} {t("the_same_amount_of_time_as_usual_this")} {period}."
 
                 self.info_label.setText(msg)
 
@@ -250,16 +253,16 @@ class ReportsScreen(QWidget):
                 diff = round(curr_month_hours - avg_month_hours, 1)
 
                 if value == 0:
-                    period = "this month"
+                    period = t("this_month")
                 elif value == 1:
-                    period = "previous month"
+                    period = t("previous_month")
 
                 if diff > 0:
-                    msg = f"You have spent {period} {diff} h. more than average."
+                    msg = f"{t("you_have_spent")} {period} {diff} {t("h_more_than_average")}"
                 elif diff < 0:
-                    msg = f"You have spent {period} {abs(diff)} h. less than average."
+                    msg = f"{t("you_have_spent")} {period} {abs(diff)} {t("h_less_than_average")}"
                 else:
-                    msg = f"You have spent the same amount of time as usual this {period}."
+                    msg = f"{t("you_have_spent")} {t("the_same_amount_of_time_as_usual_this")} {period}."
 
                 self.info_label.setText(msg)
         
@@ -312,8 +315,8 @@ class ReportsScreen(QWidget):
                 data,
                 x="Day of Week",
                 y="Active Hours" if position == "top" else "Average Active Hours",
-                title="Active Hours per day" if position == "top" else "Average Active Hours by Day of Week",
-                labels={"Day of Week": "Day", "Active Hours": "Hours", "Average Active Hours": "Hours"},
+                title=t("active_hours_per_day") if position == "top" else f"{t("average_active_hours_by_day_of")} {t("week")}",
+                labels={"day_of_week": t("day_of_week"), "active_hours": t("hours"), "average_active_hours": t("hours")},
                 hover_data=["Active Hours" if position == "top" else "Average Active Hours"]
             )
         elif (get_setting("graphs") == "Line"):
@@ -321,8 +324,8 @@ class ReportsScreen(QWidget):
                 data,
                 x="Day of Week",
                 y="Active Hours" if position == "top" else "Average Active Hours",
-                title="Active Hours" if position == "top" else "Average Active Hours by Day of Week",
-                labels={"Day of Week": "Day", "Active Hours": "Hours", "Average Active Hours": "Hours"},
+                title=t("active_hours_per_day") if position == "top" else f"{t("average_active_hours_by_day_of")} {t("week")}",
+                labels={"Day of Week": t("day_of_week"), "Active Hours": t("hours"), "Average Active Hours": t("hours")},
                 hover_data=["Active Hours" if position == "top" else "Average Active Hours"]
             )
 
@@ -352,8 +355,8 @@ class ReportsScreen(QWidget):
                 data,
                 x="Day of Month",
                 y="Active Hours",
-                title="Active Hours per day" if position == "top" else "Average Active Hours by Day of Month",
-                labels={"Hour": "Hour of Day", "Active Hours": "Active Hours", "Day of Month": "Day", "Average Active Hours": "Average Active Hours"},
+                title=t("active_hours_per_day") if position == "top" else f"{t("average_active_hours_by_day_of")} {t("month")}",
+                labels={"Hour": "Hour of Day", "Active Hours": t("hours"), "Day of Month": t("day_of_month"), "Average Active Hours": "Average Active Hours"},
                 hover_data=["Active Hours"]
             )
         elif (get_setting("graphs") == "Line"):
@@ -361,8 +364,8 @@ class ReportsScreen(QWidget):
                 data,
                 x="Day of Month",
                 y="Active Hours",
-                title="Active Hours per day" if position == "top" else "Average Active Hours by Day of Month",
-                labels={"Hour": "Hour of Day", "Active Hours": "Active Hours", "Day of Month": "Day", "Average Active Hours": "Average Active Hours"},
+                title=t("active_hours_per_day") if position == "top" else f"{t("average_active_hours_by_day_of")} {t("month")}",
+                labels={"Hour": "Hour of Day", "Active Hours": t("hours"), "Day of Month": t("day_of_month"), "Average Active Hours": "Average Active Hours"},
                 hover_data=["Active Hours"]
             )
 
