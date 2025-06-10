@@ -288,17 +288,7 @@ class MainWindow(QMainWindow):
             QCheckBox {{
                 spacing: 6px;
             }}
-            QCheckBox::indicator {{
-                width: 18px;
-                height: 18px;
-                border-radius: 4px;
-                border: 1px solid {third_color};
-                background-color: {main_color};
-            }}
-            QCheckBox::indicator:checked {{
-                border: 1px solid {third_color};
-                background-color: {main_color};
-            }}
+            
 
             QLabel {{
                 color: {text_color};
@@ -427,6 +417,19 @@ class MainWindow(QMainWindow):
             }}
             QSplitter::handle:hover {{
                 background-color: {secondary_color};
+            }}
+        """
+        """
+        QCheckBox::indicator {{
+                width: 18px;
+                height: 18px;
+                border-radius: 4px;
+                border: 1px solid {third_color};
+                background-color: {main_color};
+            }}
+            QCheckBox::indicator:checked {{
+                border: 1px solid {third_color};
+                background-color: {main_color};
             }}
         """
         """
