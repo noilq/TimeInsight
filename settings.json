@@ -1,10 +1,10 @@
 {
-    "theme": "Dark",
-    "theme_main_color": "#2b2b2b",
-    "theme_secondary_color": "#3c3c3c",
-    "theme_third_color": "#5c5c5c",
-    "theme_text_color": "#ffffff",
-    "language": "en",
+    "theme": "Light",
+    "theme_main_color": "#ffffff",
+    "theme_secondary_color": "#f0f0f0",
+    "theme_third_color": "#cccccc",
+    "theme_text_color": "#000000",
+    "language": "English",
     "autostart": true,
     "sosal": false,
     "window_checking_interval": "1",
@@ -12,7 +12,8 @@
     "last_daily_report": "1997.1.1",
     "weekly_report": true,
     "last_weekly_report": "1997.1.1",
-    "monthly_report": true,
+    "monthly_report": false,
     "last_monthly_report": "1997.1.1",
-    "graphs": "Bar"
+    "graphs": "Bar",
+    "window_cheking_interval": "1"
 }
